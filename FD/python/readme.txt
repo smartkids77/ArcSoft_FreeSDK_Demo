@@ -1,0 +1,3 @@
+1.由于libarcsoft_fsdk_face_detection.dll是32位的,要求python必须是32bit的,否则会失败
+2.请填上相应的APPID和SDKKEY
+3.请设置好YUV文件路径和大小
