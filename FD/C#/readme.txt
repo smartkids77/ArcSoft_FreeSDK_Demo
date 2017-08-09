@@ -1,0 +1,4 @@
+1.请将libarcsoft_fsdk_face_detection.dll放到readme.txt同级目录下
+2.由于libarcsoft_fsdk_face_detection.dll是32位的,要求C#中CPU必须是x86的,否则会失败
+3.请填上相应的APPID和SDKKEY
+4.请设置好YUV文件路径和大小
