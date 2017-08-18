@@ -94,7 +94,7 @@ public class AFDTest {
         }
         AFD_FSDK_FACERES faceRes = new AFD_FSDK_FACERES(ppFaceRes.getValue());
         for (int i = 0; i < faceRes.nFace; i++) {
-        	MRECT rect = new MRECT(faceRes.rcFace.getPointer().share(faceRes.rcFace.size()*i));
+        	MRECT rect = new MRECT(new Pointer(Pointer.nativeValue(faceRes.rcFace.getPointer())+faceRes.rcFace.size()*i));
         	int orient = faceRes.lfaceOrient.getPointer().getInt(i*4);
             System.out.println(String.format("%d (%d %d %d %d) orient %d",i,rect.left, rect.top,rect.right,rect.bottom,orient));
 		}
