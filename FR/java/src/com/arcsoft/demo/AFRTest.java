@@ -25,11 +25,11 @@ import com.sun.jna.ptr.PointerByReference;
 
 
 public class AFRTest {
-	public static final String FD_APPID = "XXXXXXXXXX";
-	public static final String FD_SDKKEY = "XXXXXXXXXXXXXXX";
+	public static final String FD_APPID  = "XXXXXXXXXX";
+	public static final String FD_SDKKEY = "YYYYYYYYYY";
 	
-	public static final String FR_APPID = "XXXXXXXXXXXXXXXX";
-	public static final String FR_SDKKEY = "XXXXXXXXXXXXXXXXXX";
+	public static final String FR_APPID  = "ZZZZZZZZZZ";
+	public static final String FR_SDKKEY = "WWWWWWWWWW";
 	
     public static void main(String[] args) {
     	System.out.println("#####################################################");
@@ -238,8 +238,8 @@ public class AFRTest {
         ret = AFD_FSDKLibrary.INSTANCE.AFD_FSDK_UninitialFaceEngine(hFDEngine);
         ret = AFR_FSDKLibrary.INSTANCE.AFR_FSDK_UninitialEngine(hFREngine);
         
-        faceFeatureA.free();
-        faceFeatureB.free();
+        faceFeatureA.freeUnmanaged();
+        faceFeatureB.freeUnmanaged();
     	CLibrary.INSTANCE.free(pFDWorkMem);
     	CLibrary.INSTANCE.free(pFRWorkMem);
     	
