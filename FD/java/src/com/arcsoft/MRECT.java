@@ -7,6 +7,11 @@ import com.sun.jna.Pointer;
 import com.sun.jna.Structure;
 
 public class MRECT extends Structure {
+	public static class ByValue extends MRECT implements Structure.ByValue {
+        public ByValue() { }
+        public ByValue(Pointer p) { super(p); }
+    }
+	
 	public static class ByReference extends MRECT implements Structure.ByReference{
 		public ByReference() {
 			

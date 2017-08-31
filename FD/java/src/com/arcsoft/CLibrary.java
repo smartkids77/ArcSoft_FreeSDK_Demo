@@ -13,4 +13,5 @@ public interface CLibrary extends Library {
     Pointer malloc(int len);
     void free(Pointer p);
     void printf(String format, Object... args);
+    Pointer memcpy(Pointer dst,Pointer src,long size);
 }
