@@ -8,9 +8,7 @@ import com.sun.jna.ptr.FloatByReference;
 import com.sun.jna.ptr.PointerByReference;
 
 public interface AFR_FSDKLibrary extends Library {
-	  AFR_FSDKLibrary INSTANCE = (AFR_FSDKLibrary)
-			  Native.loadLibrary("libarcsoft_fsdk_face_recognition.dll",AFR_FSDKLibrary.class);
-
+	  AFR_FSDKLibrary INSTANCE = (AFR_FSDKLibrary)LoadUtils.loadLibrary("libarcsoft_fsdk_face_recognition.dll",AFR_FSDKLibrary.class);
 	  NativeLong AFR_FSDK_InitialEngine(
 			    String appid,
 			    String sdkid,
