@@ -7,12 +7,25 @@
 	public static final String    APPID  = "XXXXXXXXXX";
 	public static final String FD_SDKKEY = "YYYYYYYYYY";
 	public static final String FR_SDKKEY = "WWWWWWWWWW";
-5.请设置好YUV文件路径、图像大小和颜色格式
-    String yuv_filePathA = "001_640x480_I420.YUV";
-    int yuv_widthA = 640;
-    int yuv_heightA = 480;
-    int yuv_formatA = ASVL_COLOR_FORMAT.ASVL_PAF_I420;
-    String yuv_filePathB = "003_640x480_I420.YUV";
-    int yuv_widthB = 640;
-    int yuv_heightB = 480;
-    int yuv_formatB = ASVL_COLOR_FORMAT.ASVL_PAF_I420;
+5.请设置好文件路径、图像大小和颜色格式
+    输入图支持YUV JPG PNG BMP
+    if(bUseYUVFile){
+        String filePathA = "640x480_I420.YUV";
+        int yuv_widthA = 640;
+        int yuv_heightA = 480;
+        int yuv_formatA = ASVL_COLOR_FORMAT.ASVL_PAF_I420;
+        
+        String filePathB = "640x360_I420.YUV";
+        int yuv_widthB = 640;
+        int yuv_heightB = 360;
+        int yuv_formatB = ASVL_COLOR_FORMAT.ASVL_PAF_I420;
+        
+        inputImgA = loadYUVImage(filePathA,yuv_widthA,yuv_heightA,yuv_formatA);
+        inputImgB = loadYUVImage(filePathB,yuv_widthB,yuv_heightB,yuv_formatB);
+    }else{
+        String filePathA = "fgg_003.jpg";
+        String filePathB = "003.jpg";
+        
+        inputImgA = loadImage(filePathA);
+        inputImgB = loadImage(filePathB);
+    }

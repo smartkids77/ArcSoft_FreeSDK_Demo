@@ -16,6 +16,8 @@ import com.arcsoft.ASVL_COLOR_FORMAT;
 import com.arcsoft.CLibrary;
 import com.arcsoft.MRECT;
 import com.arcsoft._AFD_FSDK_OrientPriority;
+import com.arcsoft.utils.ImageLoader;
+import com.arcsoft.utils.ImageLoader.BufferInfo;
 import com.sun.jna.Memory;
 import com.sun.jna.NativeLong;
 import com.sun.jna.Pointer;
@@ -32,17 +34,10 @@ public class AFRTest {
 	public static final int FR_WORKBUF_SIZE = 40*1024*1024;
 	public static final int MAX_FACE_NUM = 50;
 	
+	public static final boolean bUseYUVFile = false;
+	
     public static void main(String[] args) {
     	System.out.println("#####################################################");
-    	
-        String yuv_filePathA = "001_640x480_I420.YUV";
-        int yuv_widthA = 640;
-        int yuv_heightA = 480;
-        int yuv_formatA = ASVL_COLOR_FORMAT.ASVL_PAF_I420;
-      	String yuv_filePathB = "003_640x480_I420.YUV";
-        int yuv_widthB = 640;
-        int yuv_heightB = 480;
-        int yuv_formatB = ASVL_COLOR_FORMAT.ASVL_PAF_I420;
       
         //Init Engine
     	Pointer pFDWorkMem = CLibrary.INSTANCE.malloc(FD_WORKBUF_SIZE);
@@ -54,10 +49,13 @@ public class AFRTest {
 				        		phFDEngine, _AFD_FSDK_OrientPriority.AFD_FSDK_OPF_0_HIGHER_EXT,
 			                    16, MAX_FACE_NUM);
         if (ret.intValue() != 0) {
-        	 System.out.println("AFD_FSDK_InitialFaceEngine ret == "+ret);
-        	 System.exit(0);
+        	CLibrary.INSTANCE.free(pFDWorkMem);
+        	CLibrary.INSTANCE.free(pFRWorkMem);
+        	System.out.println("AFD_FSDK_InitialFaceEngine ret == "+ret);
+        	System.exit(0);
         }
         
+        //print FDEngine version
         Pointer hFDEngine = phFDEngine.getValue();
         AFD_FSDK_Version versionFD = AFD_FSDKLibrary.INSTANCE.AFD_FSDK_GetVersion(hFDEngine);
         System.out.println(String.format("%d %d %d %d", versionFD.lCodebase, versionFD.lMajor, versionFD.lMinor,versionFD.lBuild));
@@ -69,116 +67,50 @@ public class AFRTest {
         ret = AFR_FSDKLibrary.INSTANCE.AFR_FSDK_InitialEngine(
 				        		APPID, FR_SDKKEY, pFRWorkMem, FR_WORKBUF_SIZE, phFREngine);
         if (ret.intValue() != 0) {
-        	 System.out.println("AFD_FSDK_InitialFaceEngine ret == "+ret);
-        	 System.exit(0);
+            AFD_FSDKLibrary.INSTANCE.AFD_FSDK_UninitialFaceEngine(hFDEngine);
+        	CLibrary.INSTANCE.free(pFDWorkMem);
+        	CLibrary.INSTANCE.free(pFRWorkMem);
+        	System.out.println("AFD_FSDK_InitialFaceEngine ret == "+ret);
+        	System.exit(0);
         }
+        
+        //print FREngine version
         Pointer hFREngine = phFREngine.getValue();
         AFR_FSDK_Version versionFR = AFR_FSDKLibrary.INSTANCE.AFR_FSDK_GetVersion(hFREngine);
         System.out.println(String.format("%d %d %d %d", versionFR.lCodebase, versionFR.lMajor, versionFR.lMinor,versionFR.lBuild));
         System.out.println(versionFR.Version);
         System.out.println(versionFR.BuildDate);
         System.out.println(versionFR.CopyRight);
+        
+       	//load Image Data
+    	ASVLOFFSCREEN inputImgA;
+    	ASVLOFFSCREEN inputImgB;
+    	if(bUseYUVFile){
+	        String filePathA = "640x480_I420.YUV";
+	        int yuv_widthA = 640;
+	        int yuv_heightA = 480;
+	        int yuv_formatA = ASVL_COLOR_FORMAT.ASVL_PAF_I420;
+	        
+	      	String filePathB = "640x360_I420.YUV";
+	        int yuv_widthB = 640;
+	        int yuv_heightB = 360;
+	        int yuv_formatB = ASVL_COLOR_FORMAT.ASVL_PAF_I420;
+	        
+	        inputImgA = loadYUVImage(filePathA,yuv_widthA,yuv_heightA,yuv_formatA);
+	        inputImgB = loadYUVImage(filePathB,yuv_widthB,yuv_heightB,yuv_formatB);
+        }else{
+        	String filePathA = "fgg_003.jpg";
+        	String filePathB = "003.jpg";
+        	
+        	inputImgA = loadImage(filePathA);
+        	inputImgB = loadImage(filePathB);
+        }
     
-        //Do Face Detect in ImageA
-      	MRECT faceA_rect = new MRECT();
-      	int faceA_Orient = 0;
-      	
-    	ASVLOFFSCREEN inputImgA = loadYUVImage(yuv_filePathA,yuv_widthA,yuv_heightA,yuv_formatA);
-        {
-	        PointerByReference ppFaceRes = new PointerByReference();
-	        ret = AFD_FSDKLibrary.INSTANCE.AFD_FSDK_StillImageFaceDetection(hFDEngine,inputImgA,ppFaceRes);
-	        if (ret.intValue() != 0) {
-	       	    System.out.println("AFD_FSDK_StillImageFaceDetection ret == "+ret);
-	       	    System.exit(0);
-	        }
-	        AFD_FSDK_FACERES faceRes = new AFD_FSDK_FACERES(ppFaceRes.getValue());
-	        for (int i = 0; i < faceRes.nFace; i++) {
-	        	MRECT rect = new MRECT(new Pointer(Pointer.nativeValue(faceRes.rcFace.getPointer())+faceRes.rcFace.size()*i));
-	        	int orient = faceRes.lfaceOrient.getPointer().getInt(i*4);
-	            System.out.println(String.format("%d (%d %d %d %d) orient %d",i,rect.left, rect.top,rect.right,rect.bottom,orient));
-	            if(i == 0){
-	            	faceA_rect.left = rect.left;
-	            	faceA_rect.top = rect.top;
-	            	faceA_rect.right = rect.right;
-	            	faceA_rect.bottom = rect.bottom;
-	            	faceA_Orient = orient;
-	            }
-			}
-        }
-        
-        //Do Face Detect in ImageB
-      	MRECT faceB_rect = new MRECT();
-      	int faceB_Orient = 0;
-      	
-        ASVLOFFSCREEN inputImgB = loadYUVImage(yuv_filePathB,yuv_widthB,yuv_heightB,yuv_formatB);
-        {
-	        PointerByReference ppFaceRes = new PointerByReference();
-	        ret = AFD_FSDKLibrary.INSTANCE.AFD_FSDK_StillImageFaceDetection(hFDEngine,inputImgB,ppFaceRes);
-	        if (ret.intValue() != 0) {
-	       	    System.out.println("AFD_FSDK_StillImageFaceDetection ret == "+ret);
-	       	    System.exit(0);
-	        }
-	        AFD_FSDK_FACERES faceRes = new AFD_FSDK_FACERES(ppFaceRes.getValue());
-	        for (int i = 0; i < faceRes.nFace; i++) {
-	        	MRECT rect = new MRECT(new Pointer(Pointer.nativeValue(faceRes.rcFace.getPointer())+faceRes.rcFace.size()*i));
-	        	int orient = faceRes.lfaceOrient.getPointer().getInt(i*4);
-	            System.out.println(String.format("%d (%d %d %d %d) orient %d",i,rect.left, rect.top,rect.right,rect.bottom,orient));
-	            if(i == 0){
-	            	faceB_rect.left = rect.left;
-	            	faceB_rect.top = rect.top;
-	            	faceB_rect.right = rect.right;
-	            	faceB_rect.bottom = rect.bottom;
-	            	faceB_Orient = orient;
-	            }
-			}
-        }
-        
-        //Extract FaceA Feature
-        AFR_FSDK_FACEINPUT faceinputA = new AFR_FSDK_FACEINPUT();
-        faceinputA.lOrient = faceA_Orient;
-        faceinputA.rcFace.left = faceA_rect.left;
-        faceinputA.rcFace.top = faceA_rect.top;
-        faceinputA.rcFace.right = faceA_rect.right;
-        faceinputA.rcFace.bottom = faceA_rect.bottom;
-        
-        AFR_FSDK_FACEMODEL faceFeature = new AFR_FSDK_FACEMODEL();
-        ret = AFR_FSDKLibrary.INSTANCE.AFR_FSDK_ExtractFRFeature(hFREngine, inputImgA, faceinputA, faceFeature);
-        if (ret.intValue() != 0) {
-       	    System.out.println("A AFR_FSDK_ExtractFRFeature ret == "+ret);
-       	    System.exit(0);
-        }
-        AFR_FSDK_FACEMODEL faceFeatureA = faceFeature.deepCopy();
-        
-        //Extract FaceB Feature
-        AFR_FSDK_FACEINPUT faceinputB = new AFR_FSDK_FACEINPUT();
-        faceinputB.lOrient = faceB_Orient;
-        faceinputB.rcFace.left = faceB_rect.left;
-        faceinputB.rcFace.top = faceB_rect.top;
-        faceinputB.rcFace.right = faceB_rect.right;
-        faceinputB.rcFace.bottom = faceB_rect.bottom;
-        
-        ret = AFR_FSDKLibrary.INSTANCE.AFR_FSDK_ExtractFRFeature(hFREngine, inputImgB, faceinputB, faceFeature);
-        if (ret.intValue() != 0) {
-       	    System.out.println("B AFR_FSDK_ExtractFRFeature ret == "+ret);
-       	    System.exit(0);
-        } 
-        AFR_FSDK_FACEMODEL faceFeatureB = faceFeature.deepCopy();
-        
-        //calc similarity between faceA and faceB
-        FloatByReference fSimilScore = new FloatByReference(0.0f);
-        ret = AFR_FSDKLibrary.INSTANCE.AFR_FSDK_FacePairMatching(hFREngine, faceFeatureA, faceFeatureB, fSimilScore);
-        if (ret.intValue() != 0) {
-       	    System.out.println("AFR_FSDK_FacePairMatching ret == "+ret);
-       	    System.exit(0);
-        }
-        System.out.println("similarity between faceA and faceB is "+fSimilScore.getValue());
-        
+        System.out.println("similarity between faceA and faceB is "+compareFaceSimilarity(hFDEngine,hFREngine,inputImgA,inputImgB));
+     
         //release Engine
-        ret = AFD_FSDKLibrary.INSTANCE.AFD_FSDK_UninitialFaceEngine(hFDEngine);
-        ret = AFR_FSDKLibrary.INSTANCE.AFR_FSDK_UninitialEngine(hFREngine);
-        
-        faceFeatureA.freeUnmanaged();
-        faceFeatureB.freeUnmanaged();
+        AFD_FSDKLibrary.INSTANCE.AFD_FSDK_UninitialFaceEngine(hFDEngine);
+        AFR_FSDKLibrary.INSTANCE.AFR_FSDK_UninitialEngine(hFREngine);
         
     	CLibrary.INSTANCE.free(pFDWorkMem);
     	CLibrary.INSTANCE.free(pFRWorkMem);
@@ -186,6 +118,96 @@ public class AFRTest {
     	System.out.println("#####################################################");
     }
     
+    
+    public static FaceInfo[] doFaceDetection(Pointer hFDEngine,ASVLOFFSCREEN inputImg){
+    	FaceInfo[] faceInfo = new FaceInfo[0];
+    	
+    	PointerByReference ppFaceRes = new PointerByReference();
+    	NativeLong ret = AFD_FSDKLibrary.INSTANCE.AFD_FSDK_StillImageFaceDetection(hFDEngine,inputImg,ppFaceRes);
+        if (ret.intValue() != 0) {
+       	    System.out.println("AFD_FSDK_StillImageFaceDetection ret == "+ret);
+       	    return faceInfo;
+        }
+        
+        AFD_FSDK_FACERES faceRes = new AFD_FSDK_FACERES(ppFaceRes.getValue());
+        if(faceRes.nFace>0){
+        	faceInfo = new FaceInfo[faceRes.nFace];
+	        for (int i = 0; i < faceRes.nFace; i++) {
+	        	MRECT rect = new MRECT(new Pointer(Pointer.nativeValue(faceRes.rcFace.getPointer())+faceRes.rcFace.size()*i));
+	        	int orient = faceRes.lfaceOrient.getPointer().getInt(i*4);
+	        	faceInfo[i] = new FaceInfo();
+	        	
+	        	faceInfo[i].left = rect.left;
+	        	faceInfo[i].top = rect.top;
+	        	faceInfo[i].right = rect.right;
+	        	faceInfo[i].bottom = rect.bottom;
+	        	faceInfo[i].orient = orient;
+            	
+	            System.out.println(String.format("%d (%d %d %d %d) orient %d",i,rect.left, rect.top,rect.right,rect.bottom,orient));
+			}
+        }
+	    return faceInfo;
+    }
+    
+    public static AFR_FSDK_FACEMODEL extractFRFeature(Pointer hFREngine,ASVLOFFSCREEN inputImg,FaceInfo faceInfo){
+    	
+        AFR_FSDK_FACEINPUT faceinput = new AFR_FSDK_FACEINPUT();
+        faceinput.lOrient = faceInfo.orient;
+        faceinput.rcFace.left = faceInfo.left;
+        faceinput.rcFace.top = faceInfo.top;
+        faceinput.rcFace.right = faceInfo.right;
+        faceinput.rcFace.bottom = faceInfo.bottom;
+        
+        AFR_FSDK_FACEMODEL faceFeature = new AFR_FSDK_FACEMODEL();
+        NativeLong ret = AFR_FSDKLibrary.INSTANCE.AFR_FSDK_ExtractFRFeature(hFREngine, inputImg, faceinput, faceFeature);
+        if (ret.intValue() != 0) {
+       	    System.out.println("AFR_FSDK_ExtractFRFeature ret == "+ret);
+       	    return null;
+        }
+        
+        return faceFeature.deepCopy();
+    }
+    
+    
+    public static float compareFaceSimilarity(Pointer hFDEngine,Pointer hFREngine,ASVLOFFSCREEN inputImgA,ASVLOFFSCREEN inputImgB){
+        //Do Face Detect
+      	FaceInfo[] faceInfosA = doFaceDetection(hFDEngine,inputImgA);
+      	if (faceInfosA.length<1) {
+      		System.out.println("no face in Image A ");
+			return 0.0f;
+		}
+      	
+      	FaceInfo[] faceInfosB = doFaceDetection(hFDEngine,inputImgB);
+      	if (faceInfosB.length<1) {
+      		System.out.println("no face in Image B ");
+			return 0.0f;
+		}
+  
+        //Extract Face Feature
+      	AFR_FSDK_FACEMODEL faceFeatureA = extractFRFeature(hFREngine,inputImgA,faceInfosA[0]);
+      	if(faceFeatureA == null){
+      		System.out.println("extract face feature in Image A faile ");
+			return 0.0f;
+      	}
+      	
+      	AFR_FSDK_FACEMODEL faceFeatureB = extractFRFeature(hFREngine,inputImgB,faceInfosB[0]);
+      	if(faceFeatureB == null){
+      		System.out.println("extract face feature in Image B faile ");
+      		faceFeatureA.freeUnmanaged();
+			return 0.0f;
+      	}
+
+        //calc similarity between faceA and faceB
+        FloatByReference fSimilScore = new FloatByReference(0.0f);
+        NativeLong ret = AFR_FSDKLibrary.INSTANCE.AFR_FSDK_FacePairMatching(hFREngine, faceFeatureA, faceFeatureB, fSimilScore);
+        faceFeatureA.freeUnmanaged();
+        faceFeatureB.freeUnmanaged();
+        if (ret.intValue() != 0) {
+       	    System.out.println("AFR_FSDK_FacePairMatching failed:ret == "+ret);
+       	    return 0.0f;
+        }
+    	return fSimilScore.getValue();
+    }
     
 	public static ASVLOFFSCREEN loadYUVImage(String yuv_filePath,int yuv_width,int yuv_height,int yuv_format) {
         int yuv_rawdata_size = 0;
@@ -271,5 +293,35 @@ public class AFRTest {
 
         inputImg.setAutoRead(false);
         return inputImg;
+	}
+	
+	public static ASVLOFFSCREEN loadImage(String filePath) {
+	      BufferInfo bufferInfo = ImageLoader.getI420FromFile(filePath);
+	      
+	      ASVLOFFSCREEN inputImg = new ASVLOFFSCREEN();
+	      inputImg.u32PixelArrayFormat = ASVL_COLOR_FORMAT.ASVL_PAF_I420;
+	      inputImg.i32Width = bufferInfo.width;
+	      inputImg.i32Height = bufferInfo.height;
+	      inputImg.pi32Pitch[0] = inputImg.i32Width;
+	      inputImg.pi32Pitch[1] = inputImg.i32Width/2;
+	      inputImg.pi32Pitch[2] = inputImg.i32Width/2;
+	      inputImg.ppu8Plane[0] = new Memory(inputImg.pi32Pitch[0]*inputImg.i32Height);
+	      inputImg.ppu8Plane[0].write(0, bufferInfo.base, 0, inputImg.pi32Pitch[0]*inputImg.i32Height);
+	      inputImg.ppu8Plane[1] = new Memory(inputImg.pi32Pitch[1]*inputImg.i32Height/2);
+	      inputImg.ppu8Plane[1].write(0, bufferInfo.base, inputImg.pi32Pitch[0]*inputImg.i32Height, inputImg.pi32Pitch[1]*inputImg.i32Height/2);
+	      inputImg.ppu8Plane[2] = new Memory(inputImg.pi32Pitch[2]*inputImg.i32Height/2);
+	      inputImg.ppu8Plane[2].write(0, bufferInfo.base,inputImg.pi32Pitch[0]*inputImg.i32Height+ inputImg.pi32Pitch[1]*inputImg.i32Height/2, inputImg.pi32Pitch[2]*inputImg.i32Height/2);
+	      inputImg.ppu8Plane[3] = Pointer.NULL;
+	      
+	      inputImg.setAutoRead(false);
+	      return inputImg;
+	}
+	
+	public static class FaceInfo{
+	    public int left;
+	    public int top;
+	    public int right;
+	    public int bottom;
+	    public int orient;
 	}
 }
