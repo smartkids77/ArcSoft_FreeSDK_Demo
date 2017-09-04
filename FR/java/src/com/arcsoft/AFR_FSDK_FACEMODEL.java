@@ -43,4 +43,8 @@ public class AFR_FSDK_FACEMODEL extends Structure {
     protected void finalize() throws   Throwable  {  
     	freeUnmanaged();
     }
+    
+    public int getFeatureSize() {
+		return lFeatureSize&0x7FFFFFFF;
+	}
 }
