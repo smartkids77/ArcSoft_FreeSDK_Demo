@@ -21,9 +21,9 @@ public class AFR_FSDK_FACEMODEL extends Structure {
     
     public AFR_FSDK_FACEMODEL deepCopy(){
     	AFR_FSDK_FACEMODEL copyFeature = new AFR_FSDK_FACEMODEL();
-    	
+    	copyFeature.lFeatureSize = copyFeature.lFeatureSize&0x80000000;
     	if((pbFeature != null)&&(Pointer.nativeValue(pbFeature.getPointer())!= 0)){
-        	copyFeature.lFeatureSize = lFeatureSize;
+        	copyFeature.lFeatureSize |= lFeatureSize&0x7FFFFFFF;
         	copyFeature.pbFeature = new ByteByReference();
         	copyFeature.pbFeature.setPointer(CLibrary.INSTANCE.malloc(lFeatureSize));
         	CLibrary.INSTANCE.memcpy(copyFeature.pbFeature.getPointer(),pbFeature.getPointer(),lFeatureSize);
@@ -33,7 +33,7 @@ public class AFR_FSDK_FACEMODEL extends Structure {
     }
     
     public synchronized void freeUnmanaged(){
-    	if((pbFeature != null)&&(Pointer.nativeValue(pbFeature.getPointer())!= 0)){
+    	if(((lFeatureSize&0x80000000) != 0)&&(pbFeature != null)&&(Pointer.nativeValue(pbFeature.getPointer())!= 0)){
     		CLibrary.INSTANCE.free(pbFeature.getPointer());
     		pbFeature = null;
     	}
