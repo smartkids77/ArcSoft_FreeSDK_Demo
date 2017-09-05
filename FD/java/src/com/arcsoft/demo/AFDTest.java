@@ -12,6 +12,8 @@ import com.arcsoft.ASVL_COLOR_FORMAT;
 import com.arcsoft.CLibrary;
 import com.arcsoft.MRECT;
 import com.arcsoft._AFD_FSDK_OrientPriority;
+import com.arcsoft.utils.ImageLoader;
+import com.arcsoft.utils.ImageLoader.BufferInfo;
 import com.sun.jna.Memory;
 import com.sun.jna.NativeLong;
 import com.sun.jna.Pointer;
@@ -22,35 +24,95 @@ public class AFDTest {
 	public static final String APPID     = "XXXXXXXXXXXXXXX";
 	public static final String FD_SDKKEY = "YYYYYYYYYYYYYYY";
 	
-	public static final  int WORKBUF_SIZE = 20*1024*1024;
-	public static final  int MAX_FACE_NUM = 50;
-
+	public static final int FD_WORKBUF_SIZE = 20*1024*1024;
+	public static final int MAX_FACE_NUM = 50;
+	
+	public static final boolean bUseYUVFile = false;
+	
     public static void main(String[] args) {
-
-    	String yuv_filePath = "001_640x480_I420.YUV";
-    	int yuv_width = 640;
-    	int yuv_height = 480;
-    	int yuv_format = ASVL_COLOR_FORMAT.ASVL_PAF_I420;
-    	
-    	Pointer pWorkMem = CLibrary.INSTANCE.malloc(WORKBUF_SIZE);
+		System.out.println("#####################################################");
+		
+	    //Init Engine
+    	Pointer pFDWorkMem = CLibrary.INSTANCE.malloc(FD_WORKBUF_SIZE);
         
-        PointerByReference phEngine = new PointerByReference();
+        PointerByReference phFDEngine = new PointerByReference();
         NativeLong ret = AFD_FSDKLibrary.INSTANCE.AFD_FSDK_InitialFaceEngine(
-				        		APPID, FD_SDKKEY, pWorkMem, WORKBUF_SIZE, 
-				        		phEngine, _AFD_FSDK_OrientPriority.AFD_FSDK_OPF_0_HIGHER_EXT,
+				        		APPID, FD_SDKKEY, pFDWorkMem, FD_WORKBUF_SIZE, 
+				        		phFDEngine, _AFD_FSDK_OrientPriority.AFD_FSDK_OPF_0_HIGHER_EXT,
 			                    16, MAX_FACE_NUM);
         if (ret.intValue() != 0) {
+			 CLibrary.INSTANCE.free(pFDWorkMem);
         	 System.out.println("AFD_FSDK_InitialFaceEngine ret == "+ret);
         	 System.exit(0);
         }
         
-        Pointer hEngine = phEngine.getValue();
-        AFD_FSDK_Version version = AFD_FSDKLibrary.INSTANCE.AFD_FSDK_GetVersion(hEngine);
-        System.out.println(String.format("%d %d %d %d", version.lCodebase, version.lMajor, version.lMinor,version.lBuild));
-        System.out.println(version.Version);
-        System.out.println(version.BuildDate);
-        System.out.println(version.CopyRight);
+		//print FDEngine version
+        Pointer hFDEngine = phFDEngine.getValue();
+        AFD_FSDK_Version versionFD = AFD_FSDKLibrary.INSTANCE.AFD_FSDK_GetVersion(hFDEngine);
+        System.out.println(String.format("%d %d %d %d", versionFD.lCodebase, versionFD.lMajor, versionFD.lMinor,versionFD.lBuild));
+        System.out.println(versionFD.Version);
+        System.out.println(versionFD.BuildDate);
+        System.out.println(versionFD.CopyRight);
         
+       	//load Image Data
+    	ASVLOFFSCREEN inputImg;
+    	if(bUseYUVFile){
+	        String filePath = "001_640x480_I420.YUV";
+	        int yuv_width = 640;
+	        int yuv_height = 480;
+	        int yuv_format = ASVL_COLOR_FORMAT.ASVL_PAF_I420;
+	        
+	        inputImg = loadYUVImage(filePath,yuv_width,yuv_height,yuv_format);
+        }else{
+        	String filePath = "003.jpg";
+        	
+        	inputImg = loadImage(filePath);
+        }
+        
+    	//Do Face Detect
+      	FaceInfo[] faceInfos = doFaceDetection(hFDEngine,inputImg);
+      	for (int i = 0; i < faceInfos.length; i++) {
+      		FaceInfo rect = faceInfos[i];
+      		System.out.println(String.format("%d (%d %d %d %d) orient %d",i,rect.left, rect.top,rect.right,rect.bottom,rect.orient));
+		}
+
+        //Release Engine
+        AFD_FSDKLibrary.INSTANCE.AFD_FSDK_UninitialFaceEngine(hFDEngine);
+        
+    	CLibrary.INSTANCE.free(pFDWorkMem);
+    	
+    	System.out.println("#####################################################");
+    }
+
+    public static FaceInfo[] doFaceDetection(Pointer hFDEngine,ASVLOFFSCREEN inputImg){
+    	FaceInfo[] faceInfo = new FaceInfo[0];
+    	
+    	PointerByReference ppFaceRes = new PointerByReference();
+    	NativeLong ret = AFD_FSDKLibrary.INSTANCE.AFD_FSDK_StillImageFaceDetection(hFDEngine,inputImg,ppFaceRes);
+        if (ret.intValue() != 0) {
+       	    System.out.println("AFD_FSDK_StillImageFaceDetection ret == "+ret);
+       	    return faceInfo;
+        }
+        
+        AFD_FSDK_FACERES faceRes = new AFD_FSDK_FACERES(ppFaceRes.getValue());
+        if(faceRes.nFace>0){
+        	faceInfo = new FaceInfo[faceRes.nFace];
+	        for (int i = 0; i < faceRes.nFace; i++) {
+	        	MRECT rect = new MRECT(new Pointer(Pointer.nativeValue(faceRes.rcFace.getPointer())+faceRes.rcFace.size()*i));
+	        	int orient = faceRes.lfaceOrient.getPointer().getInt(i*4);
+	        	faceInfo[i] = new FaceInfo();
+	        	
+	        	faceInfo[i].left = rect.left;
+	        	faceInfo[i].top = rect.top;
+	        	faceInfo[i].right = rect.right;
+	        	faceInfo[i].bottom = rect.bottom;
+	        	faceInfo[i].orient = orient;
+			}
+        }
+	    return faceInfo;
+    }
+	
+	public static ASVLOFFSCREEN loadYUVImage(String yuv_filePath,int yuv_width,int yuv_height,int yuv_format) {
         int yuv_rawdata_size = 0;
         
         ASVLOFFSCREEN  inputImg = new ASVLOFFSCREEN();
@@ -133,22 +195,35 @@ public class AFDTest {
         }
 
         inputImg.setAutoRead(false);
-        PointerByReference ppFaceRes = new PointerByReference();
-        
-        ret = AFD_FSDKLibrary.INSTANCE.AFD_FSDK_StillImageFaceDetection(hEngine,inputImg,ppFaceRes);
-        if (ret.intValue() != 0) {
-       	    System.out.println("AFD_FSDK_StillImageFaceDetection ret == "+ret);
-       	    System.exit(0);
-        }
-        AFD_FSDK_FACERES faceRes = new AFD_FSDK_FACERES(ppFaceRes.getValue());
-        for (int i = 0; i < faceRes.nFace; i++) {
-        	MRECT rect = new MRECT(new Pointer(Pointer.nativeValue(faceRes.rcFace.getPointer())+faceRes.rcFace.size()*i));
-        	int orient = faceRes.lfaceOrient.getPointer().getInt(i*4);
-            System.out.println(String.format("%d (%d %d %d %d) orient %d",i,rect.left, rect.top,rect.right,rect.bottom,orient));
-		}
-        
-        ret = AFD_FSDKLibrary.INSTANCE.AFD_FSDK_UninitialFaceEngine(hEngine);
-
-    	CLibrary.INSTANCE.free(pWorkMem);
-    }
+        return inputImg;
+	}
+	
+	public static ASVLOFFSCREEN loadImage(String filePath) {
+	      BufferInfo bufferInfo = ImageLoader.getI420FromFile(filePath);
+	      ASVLOFFSCREEN inputImg = new ASVLOFFSCREEN();
+	      inputImg.u32PixelArrayFormat = ASVL_COLOR_FORMAT.ASVL_PAF_I420;
+	      inputImg.i32Width = bufferInfo.width;
+	      inputImg.i32Height = bufferInfo.height;
+	      inputImg.pi32Pitch[0] = inputImg.i32Width;
+	      inputImg.pi32Pitch[1] = inputImg.i32Width/2;
+	      inputImg.pi32Pitch[2] = inputImg.i32Width/2;
+	      inputImg.ppu8Plane[0] = new Memory(inputImg.pi32Pitch[0]*inputImg.i32Height);
+	      inputImg.ppu8Plane[0].write(0, bufferInfo.base, 0, inputImg.pi32Pitch[0]*inputImg.i32Height);
+	      inputImg.ppu8Plane[1] = new Memory(inputImg.pi32Pitch[1]*inputImg.i32Height/2);
+	      inputImg.ppu8Plane[1].write(0, bufferInfo.base, inputImg.pi32Pitch[0]*inputImg.i32Height, inputImg.pi32Pitch[1]*inputImg.i32Height/2);
+	      inputImg.ppu8Plane[2] = new Memory(inputImg.pi32Pitch[2]*inputImg.i32Height/2);
+	      inputImg.ppu8Plane[2].write(0, bufferInfo.base,inputImg.pi32Pitch[0]*inputImg.i32Height+ inputImg.pi32Pitch[1]*inputImg.i32Height/2, inputImg.pi32Pitch[2]*inputImg.i32Height/2);
+	      inputImg.ppu8Plane[3] = Pointer.NULL;
+	      
+	      inputImg.setAutoRead(false);
+	      return inputImg;
+	}
+	
+	public static class FaceInfo{
+	    public int left;
+	    public int top;
+	    public int right;
+	    public int bottom;
+	    public int orient;
+	}
 }
