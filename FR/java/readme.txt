@@ -29,3 +29,9 @@
         inputImgA = loadImage(filePathA);
         inputImgB = loadImage(filePathB);
     }
+6.AFR_FSDK_FACEMODEL数据存取方法
+    (1)从现有AFR_FSDK_FACEMODEL中获取数据
+       byte[] featureInByteArray = faceFeatureA.toByteArray();
+    (2)从byte[]中生成AFR_FSDK_FACEMODEL
+       AFR_FSDK_FACEMODEL faceFeatureX = AFR_FSDK_FACEMODEL.fromByteArray(featureInByteArray);
+

@@ -70,7 +70,7 @@ public class AFRTest {
             AFD_FSDKLibrary.INSTANCE.AFD_FSDK_UninitialFaceEngine(hFDEngine);
         	CLibrary.INSTANCE.free(pFDWorkMem);
         	CLibrary.INSTANCE.free(pFRWorkMem);
-        	System.out.println("AFD_FSDK_InitialFaceEngine ret == "+ret);
+        	System.out.println("AFR_FSDK_InitialEngine ret == "+ret);
         	System.exit(0);
         }
         
@@ -91,16 +91,16 @@ public class AFRTest {
 	        int yuv_heightA = 480;
 	        int yuv_formatA = ASVL_COLOR_FORMAT.ASVL_PAF_I420;
 	        
-	      	String filePathB = "640x360_I420.YUV";
+	      	String filePathB = "640x480_I420.YUV";
 	        int yuv_widthB = 640;
-	        int yuv_heightB = 360;
+	        int yuv_heightB = 480;
 	        int yuv_formatB = ASVL_COLOR_FORMAT.ASVL_PAF_I420;
 	        
 	        inputImgA = loadYUVImage(filePathA,yuv_widthA,yuv_heightA,yuv_formatA);
 	        inputImgB = loadYUVImage(filePathB,yuv_widthB,yuv_heightB,yuv_formatB);
         }else{
-        	String filePathA = "fgg_003.jpg";
-        	String filePathB = "003.jpg";
+        	String filePathA = "001.jpg";
+        	String filePathB = "1_9.jpg";
         	
         	inputImgA = loadImage(filePathA);
         	inputImgB = loadImage(filePathB);
@@ -165,7 +165,12 @@ public class AFRTest {
        	    return null;
         }
         
-        return faceFeature.deepCopy();
+        try {
+			return faceFeature.deepCopy();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
     }
     
     
@@ -186,13 +191,13 @@ public class AFRTest {
         //Extract Face Feature
       	AFR_FSDK_FACEMODEL faceFeatureA = extractFRFeature(hFREngine,inputImgA,faceInfosA[0]);
       	if(faceFeatureA == null){
-      		System.out.println("extract face feature in Image A faile ");
+      		System.out.println("extract face feature in Image A failed");
 			return 0.0f;
       	}
       	
       	AFR_FSDK_FACEMODEL faceFeatureB = extractFRFeature(hFREngine,inputImgB,faceInfosB[0]);
       	if(faceFeatureB == null){
-      		System.out.println("extract face feature in Image B faile ");
+      		System.out.println("extract face feature in Image B failed");
       		faceFeatureA.freeUnmanaged();
 			return 0.0f;
       	}
