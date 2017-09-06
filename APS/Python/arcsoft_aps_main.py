@@ -3,7 +3,7 @@ import os.path
 from PIL import Image
 import platform
 
-#APKID = c_char_p(u"XXXXXXXXXX".encode('utf-8'))
+#APPID = c_char_p(u"XXXXXXXXXX".encode('utf-8'))
 #SDKKEY = c_char_p(u"YYYYYYYYY".encode('utf-8'))
 INPUT_IMAGE_PATH = "s_1920x1080.bmp"
 STYLE_MODEL_PATH = "CHINESEART-001.tmpl"
@@ -47,7 +47,7 @@ color_format = ASVL_PAF_RGB24_R8G8B8
 pWorkMem = libc.malloc(c_size_t(WORKBUF_SIZE))
 hMgr = mainlib.MMemMgrCreate(pWorkMem, c_long(WORKBUF_SIZE))
 hEngine = c_void_p()
-ret = mainlib.APS_FSDK_InitEngine(APKID, SDKKEY, hMgr, c_int32(-1), byref(hEngine))
+ret = mainlib.APS_FSDK_InitEngine(APPID, SDKKEY, hMgr, c_int32(-1), byref(hEngine))
 if ret != 0:
     print ("APS_FSDK_InitEngine ret == 0x{:x}".format(ret))
     exit(0)

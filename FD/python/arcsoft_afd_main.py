@@ -3,8 +3,8 @@ import os.path
 import platform
 import os
 
-APKID = c_char_p(u"XXXXXXXXXXXXXXXXXXXX".encode('utf-8'))
-SDKKEY = c_char_p(u"YYYYYYYYYYYYYYYYYYY".encode('utf-8'))
+#APPID = c_char_p(u"XXXXXXXXXXXXXXXXXXXX".encode('utf-8'))
+#SDKKEY = c_char_p(u"YYYYYYYYYYYYYYYYYYY".encode('utf-8'))
 
 c_ubyte_p = POINTER(c_ubyte) 
 class AFD_FSDK_Version(Structure):
@@ -43,7 +43,7 @@ libc.free.argtypes = (c_void_p,)
 WORKBUF_SIZE = 40*1024*1024
 pWorkMem = libc.malloc(c_size_t(WORKBUF_SIZE))
 hEngine = c_void_p()
-ret = mainlib.AFD_FSDK_InitialFaceEngine(APKID, SDKKEY, pWorkMem, c_int32(WORKBUF_SIZE), byref(hEngine),c_int32(5),c_int32(16),c_int32(50))
+ret = mainlib.AFD_FSDK_InitialFaceEngine(APPID, SDKKEY, pWorkMem, c_int32(WORKBUF_SIZE), byref(hEngine),c_int32(5),c_int32(16),c_int32(50))
 if ret != 0:
 	print ("AFD_FSDK_InitialFaceEngine ret == 0x{:x}".format(ret))
 	exit(0)
