@@ -43,9 +43,12 @@ class AFR_FSDK_FACEMODEL(Structure):
 
 if __name__ == '__main__':
     if len(sys.argv) == 2:
-        srcImageDir = sys.argv[1]
+        if sys.version_info[0] < 3:
+            srcImageDir = sys.argv[1].decode(sys.stdout.encoding)
+        else:
+            srcImageDir = sys.argv[1]
         if not os.path.isdir(srcImageDir):
-            print(srcImageDir+':directory does not exist')
+            print(srcImageDir+u':directory does not exist')
             exit(0)
     else:
         print('wrong number of arguments')
@@ -158,7 +161,8 @@ if __name__ == '__main__':
                 inputImage.ppu8Plane[0] = cast(bgra_raw,c_ubyte_p)
 
                 for i in range(0, pFaceRes.contents.nFace):
-                    print(facename+' ({:d},{:d},{:d},{:d})'.format( \
+                    print(facename+u' {:d} of total {:d} ({:d},{:d},{:d},{:d})'.format( \
+                        i+1,pFaceRes.contents.nFace, \
                         pFaceRes.contents.rcFace[i].left, \
                         pFaceRes.contents.rcFace[i].top,\
                         pFaceRes.contents.rcFace[i].right, \
@@ -182,7 +186,7 @@ if __name__ == '__main__':
                         img_bytearray = imgByteIO.getvalue()
                         feature = create_string_buffer(facemodel.lFeatureSize)   
                         libc.memcpy(feature,facemodel.pbFeature,facemodel.lFeatureSize)
-                        db_cursor.execute('INSERT INTO faceinfo VALUES (?,?,?,?)', (faceid,facename,sqlite3.Binary(feature),sqlite3.Binary(img_bytearray)))
+                        db_cursor.execute(u'INSERT INTO faceinfo VALUES (?,?,?,?)', (faceid,facename,sqlite3.Binary(bytearray(feature)),sqlite3.Binary(img_bytearray)))
                         faceid = faceid + 1
                     break
 
