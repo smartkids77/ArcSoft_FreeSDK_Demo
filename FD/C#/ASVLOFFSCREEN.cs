@@ -16,6 +16,16 @@ namespace arcsoft
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
         public int[] pi32Pitch;
-    };
 
+        public void freeUnmanaged() {
+            if (ppu8Plane != null) {
+                for (int i = 0; i < ppu8Plane.Length; i++) {
+                    if (ppu8Plane[i] != IntPtr.Zero) {
+                        Marshal.FreeHGlobal(ppu8Plane[i]);
+                    }
+                }
+                ppu8Plane = null;
+            }
+        }
+    }
 }

@@ -25,17 +25,16 @@ namespace arcsoft {
                 IntPtr ret = AFD_FSDKLibrary.AFD_FSDK_InitialFaceEngine(APPID, FD_SDKKEY, pFDWorkMem, FD_WORKBUF_SIZE, ref(hFDEngine), _AFD_FSDK_OrientPriority.AFD_FSDK_OPF_0_HIGHER_EXT, 16, MAX_FACE_NUM);
                 if (ret.ToInt64() != 0) {
                     Marshal.FreeCoTaskMem(pFDWorkMem);
-                    Console.WriteLine(String.Format("AFD_FSDK_InitialFaceEngine {0:X}", ret));
+                    Console.WriteLine(String.Format("AFD_FSDK_InitialFaceEngine 0x{0:x}", ret));
                     Environment.Exit(0);
                 }
 
                 //print FDEngine version
-                IntPtr pVersion_IntPtr = AFD_FSDKLibrary.AFD_FSDK_GetVersion(hFDEngine);
-                AFD_FSDK_Version versionFD = (AFD_FSDK_Version)Marshal.PtrToStructure(pVersion_IntPtr, typeof(AFD_FSDK_Version));
-                Console.WriteLine(String.Format("{0} {1} {2} {3}", versionFD.lCodebase, versionFD.lMajor,versionFD.lMinor, versionFD.lBuild));
-                Console.WriteLine("{0}", versionFD.Version);
-                Console.WriteLine("{0}", versionFD.BuildDate);
-                Console.WriteLine("{0}", versionFD.CopyRight);
+                AFD_FSDK_Version versionFD = (AFD_FSDK_Version)Marshal.PtrToStructure(AFD_FSDKLibrary.AFD_FSDK_GetVersion(hFDEngine), typeof(AFD_FSDK_Version));
+                Console.WriteLine(String.Format("{0} {1} {2} {3}", versionFD.lCodebase, versionFD.lMajor, versionFD.lMinor, versionFD.lBuild));
+                Console.WriteLine(versionFD.Version);
+                Console.WriteLine(versionFD.BuildDate);
+                Console.WriteLine(versionFD.CopyRight);
 
                 //load Image Data
                 ASVLOFFSCREEN inputImg;
@@ -59,14 +58,7 @@ namespace arcsoft {
                     Console.WriteLine(String.Format("{0} ({1} {2} {3} {4}) orient {5}", i, rect.left, rect.top, rect.right, rect.bottom, rect.orient));
                 }
 
-                if (inputImg.ppu8Plane != null) {
-                    for (int i = 0; i < inputImg.ppu8Plane.Length; i++) {
-                        if (inputImg.ppu8Plane[i] != IntPtr.Zero) {
-                            Marshal.FreeHGlobal(inputImg.ppu8Plane[i]);
-                        }
-                    }
-                    inputImg.ppu8Plane = null;
-                }
+                inputImg.freeUnmanaged();
    
 		        //release Engine
                 AFD_FSDKLibrary.AFD_FSDK_UninitialFaceEngine(hFDEngine);
@@ -83,7 +75,7 @@ namespace arcsoft {
                 IntPtr pFaceRes = IntPtr.Zero;
                 IntPtr ret = AFD_FSDKLibrary.AFD_FSDK_StillImageFaceDetection(hFDEngine, ref(inputImg), ref(pFaceRes));
                 if (ret.ToInt64() != 0) {
-                    Console.WriteLine(String.Format("AFD_FSDK_StillImageFaceDetection {0:X}", ret));
+                    Console.WriteLine(String.Format("AFD_FSDK_StillImageFaceDetection 0x{0:x}", ret));
                     return faceInfo;
                 }
 

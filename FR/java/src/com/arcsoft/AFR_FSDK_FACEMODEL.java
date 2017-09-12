@@ -21,56 +21,56 @@ public class AFR_FSDK_FACEMODEL extends Structure {
     }
     
     public AFR_FSDK_FACEMODEL deepCopy() throws Exception{
-    	
-    	if(!isValid()){
-    		throw new Exception("invalid feature");
-    	}
-    	
-    	AFR_FSDK_FACEMODEL feature = new AFR_FSDK_FACEMODEL();
-    	feature.bAllocByMalloc = true; 
-    	feature.lFeatureSize = lFeatureSize;
-    	feature.pbFeature = new ByteByReference();
-    	feature.pbFeature.setPointer(CLibrary.INSTANCE.malloc(feature.lFeatureSize));
-    	CLibrary.INSTANCE.memcpy(feature.pbFeature.getPointer(),pbFeature.getPointer(),feature.lFeatureSize);
-    	return feature;
+        
+        if(!isValid()){
+            throw new Exception("invalid feature");
+        }
+        
+        AFR_FSDK_FACEMODEL feature = new AFR_FSDK_FACEMODEL();
+        feature.bAllocByMalloc = true; 
+        feature.lFeatureSize = lFeatureSize;
+        feature.pbFeature = new ByteByReference();
+        feature.pbFeature.setPointer(CLibrary.INSTANCE.malloc(feature.lFeatureSize));
+        CLibrary.INSTANCE.memcpy(feature.pbFeature.getPointer(),pbFeature.getPointer(),feature.lFeatureSize);
+        return feature;
     }
     
     public synchronized void freeUnmanaged(){
-    	if(bAllocByMalloc&&isValid()){
-    		CLibrary.INSTANCE.free(pbFeature.getPointer());
-    		pbFeature = null;
-    		//System.out.println("gc feature freeUnmanaged");
-    	}
+        if(bAllocByMalloc&&isValid()){
+            CLibrary.INSTANCE.free(pbFeature.getPointer());
+            pbFeature = null;
+            //System.out.println("gc feature freeUnmanaged");
+        }
     }
     
     @Override
     protected void finalize() throws   Throwable  {  
-    	freeUnmanaged();
+        freeUnmanaged();
     }
     
     
     public static AFR_FSDK_FACEMODEL fromByteArray(byte[] byteArray) throws Exception{
-    	if(byteArray == null){
-    		throw new Exception("invalid byteArray");
-    	}
-    	
-    	AFR_FSDK_FACEMODEL feature = new AFR_FSDK_FACEMODEL();
-    	feature.lFeatureSize = byteArray.length;
-    	feature.bAllocByMalloc = true; 
-    	feature.pbFeature = new ByteByReference();
-    	feature.pbFeature.setPointer(CLibrary.INSTANCE.malloc(feature.lFeatureSize));
-    	feature.pbFeature.getPointer().write(0, byteArray, 0, feature.lFeatureSize);
-    	return feature;
+        if(byteArray == null){
+            throw new Exception("invalid byteArray");
+        }
+        
+        AFR_FSDK_FACEMODEL feature = new AFR_FSDK_FACEMODEL();
+        feature.lFeatureSize = byteArray.length;
+        feature.bAllocByMalloc = true; 
+        feature.pbFeature = new ByteByReference();
+        feature.pbFeature.setPointer(CLibrary.INSTANCE.malloc(feature.lFeatureSize));
+        feature.pbFeature.getPointer().write(0, byteArray, 0, feature.lFeatureSize);
+        return feature;
     }
     
     public byte[] toByteArray() throws Exception{
-    	if(!isValid()){
-    		throw new Exception("invalid feature");
-    	}
-    	return pbFeature.getPointer().getByteArray(0, lFeatureSize);
+        if(!isValid()){
+            throw new Exception("invalid feature");
+        }
+        return pbFeature.getPointer().getByteArray(0, lFeatureSize);
     }
     
     private boolean isValid() {
-		return ((pbFeature != null)&&(Pointer.nativeValue(pbFeature.getPointer())!= 0));
-	}
+        return ((pbFeature != null)&&(Pointer.nativeValue(pbFeature.getPointer())!= 0));
+    }
 }

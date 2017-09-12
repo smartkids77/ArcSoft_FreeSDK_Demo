@@ -13,12 +13,9 @@ public class AFD_FSDK_Version extends Structure {
     public String Version;
     public String BuildDate;
     public String CopyRight;
-    
+
     @Override
-    protected List getFieldOrder() { 
-        return Arrays.asList(new String[] { 
-            "lCodebase", "lMajor", "lMinor", "lBuild","Version", "BuildDate", "CopyRight"
-        });
+    protected List getFieldOrder() {
+        return Arrays.asList(new String[] { "lCodebase", "lMajor", "lMinor", "lBuild", "Version", "BuildDate", "CopyRight" });
     }
 }
-

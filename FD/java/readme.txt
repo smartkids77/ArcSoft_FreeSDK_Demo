@@ -11,9 +11,9 @@
         String filePath = "001_640x480_I420.YUV";
         int yuv_width = 640;
         int yuv_height = 480;
-        int yuv_format = ASVL_COLOR_FORMAT.ASVL_PAF_I420;   
+        int yuv_format = ASVL_COLOR_FORMAT.ASVL_PAF_I420;
         inputImg = loadYUVImage(filePath,yuv_width,yuv_height,yuv_format);
     }else{
-        String filePath = "003.jpg";     
+        String filePath = "003.jpg";
         inputImg = loadImage(filePath);
     }
