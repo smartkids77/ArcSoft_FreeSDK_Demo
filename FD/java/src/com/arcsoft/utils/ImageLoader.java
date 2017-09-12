@@ -5,45 +5,33 @@ import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
 
+public class ImageLoader {
 
-public  class ImageLoader {
-	public static class BufferInfo{
-	    public int width;
-	    public int height;
-	    public byte[] base;
-	    
-	    public BufferInfo(int w,int h,byte[] buf){
-	    	width = w;
-	    	height = h;
-	    	base = buf;
-	    }
-	}
-	
-	public static BufferInfo getI420FromFile(String filePath) {
-		byte[] yuv = null;
-		int w = 0;
-		int h = 0;
-		try {
-			BufferedImage img = ImageIO.read(new File(filePath));
-			if(((img.getWidth()&0x1)!= 0)||((img.getHeight()&0x1) != 0)){
-				img = img.getSubimage(0, 0, img.getWidth()&0xFFFFFFFE, img.getHeight()&0xFFFFFFFE);
-			}
-			w = img.getWidth();
-			h = img.getHeight();
-			int[] bgra = img.getRGB(0,0,w,h,null,0,w);
-			yuv = BGRA2I420(bgra,w,h);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return new BufferInfo(w,h,yuv);
-	}
-	
-	public static byte[] BGRA2I420(int[] bgra, int width, int height) {
+    public static BufferInfo getI420FromFile(String filePath) {
+        byte[] yuv = null;
+        int w = 0;
+        int h = 0;
+        try {
+            BufferedImage img = ImageIO.read(new File(filePath));
+            if (((img.getWidth() & 0x1) != 0) || ((img.getHeight() & 0x1) != 0)) {
+                img = img.getSubimage(0, 0, img.getWidth() & 0xFFFFFFFE, img.getHeight() & 0xFFFFFFFE);
+            }
+            w = img.getWidth();
+            h = img.getHeight();
+            int[] bgra = img.getRGB(0, 0, w, h, null, 0, w);
+            yuv = BGRA2I420(bgra, w, h);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return new BufferInfo(w, h, yuv);
+    }
+
+    public static byte[] BGRA2I420(int[] bgra, int width, int height) {
 
         byte[] yuv = new byte[width * height * 3 / 2];
         int u_offset = width * height;
-        int y_offset = width * height*5/4;
-        
+        int y_offset = width * height * 5 / 4;
+
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
                 int rgb = bgra[i * width + j] & 0x00FFFFFF;
@@ -60,10 +48,10 @@ public  class ImageLoader {
                 v = v < 0 ? 0 : (v > 255 ? 255 : v);
 
                 yuv[i * width + j] = (byte) y;
-                yuv[u_offset + (i >> 1) * (width>>1)+(j>>1)] = (byte) u;
-                yuv[y_offset + (i >> 1) * (width>>1)+(j>>1)] = (byte) v;
+                yuv[u_offset + (i >> 1) * (width >> 1) + (j >> 1)] = (byte) u;
+                yuv[y_offset + (i >> 1) * (width >> 1) + (j >> 1)] = (byte) v;
             }
         }
         return yuv;
-    } 
+    }
 }
