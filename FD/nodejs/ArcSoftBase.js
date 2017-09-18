@@ -132,7 +132,7 @@ function loadImage(filePath,result_callback) {
             var u = ((-38 * r - 74 * g + 112 * b + 128) >> 8) + 128;
             var v = ((112 * r - 94 * g - 18 * b + 128) >> 8) + 128;
 
-            y = y < 16 ? 16 : (y > 255 ? 255 : y);
+            y = y < 0 ? 0 : (y > 255 ? 255 : y);
             u = u < 0 ? 0 : (u > 255 ? 255 : u);
             v = v < 0 ? 0 : (v > 255 ? 255 : v);
 
