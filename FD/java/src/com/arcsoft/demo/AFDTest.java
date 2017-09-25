@@ -38,9 +38,9 @@ public class AFDTest {
 
         PointerByReference phFDEngine = new PointerByReference();
         NativeLong ret = AFD_FSDKLibrary.INSTANCE.AFD_FSDK_InitialFaceEngine(APPID, FD_SDKKEY, pFDWorkMem, FD_WORKBUF_SIZE, phFDEngine, _AFD_FSDK_OrientPriority.AFD_FSDK_OPF_0_HIGHER_EXT, 16, MAX_FACE_NUM);
-        if (ret.intValue() != 0) {
+        if (ret.longValue() != 0) {
             CLibrary.INSTANCE.free(pFDWorkMem);
-            System.out.println(String.format("AFD_FSDK_InitialFaceEngine ret 0x%x",ret));
+            System.out.println(String.format("AFD_FSDK_InitialFaceEngine ret 0x%x",ret.longValue()));
             System.exit(0);
         }
 
@@ -88,7 +88,7 @@ public class AFDTest {
         PointerByReference ppFaceRes = new PointerByReference();
         NativeLong ret = AFD_FSDKLibrary.INSTANCE.AFD_FSDK_StillImageFaceDetection(hFDEngine, inputImg, ppFaceRes);
         if (ret.longValue() != 0) {
-            System.out.println(String.format("AFD_FSDK_StillImageFaceDetection ret 0x%x" , ret));
+            System.out.println(String.format("AFD_FSDK_StillImageFaceDetection ret 0x%x" , ret.longValue()));
             return faceInfo;
         }
 

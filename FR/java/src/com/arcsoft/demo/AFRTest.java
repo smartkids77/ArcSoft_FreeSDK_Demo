@@ -46,10 +46,10 @@ public class AFRTest {
 
         PointerByReference phFDEngine = new PointerByReference();
         NativeLong ret = AFD_FSDKLibrary.INSTANCE.AFD_FSDK_InitialFaceEngine(APPID, FD_SDKKEY, pFDWorkMem, FD_WORKBUF_SIZE, phFDEngine, _AFD_FSDK_OrientPriority.AFD_FSDK_OPF_0_HIGHER_EXT, 16, MAX_FACE_NUM);
-        if (ret.intValue() != 0) {
+        if (ret.longValue() != 0) {
             CLibrary.INSTANCE.free(pFDWorkMem);
             CLibrary.INSTANCE.free(pFRWorkMem);
-            System.out.println(String.format("AFD_FSDK_InitialFaceEngine ret 0x%x",ret));
+            System.out.println(String.format("AFD_FSDK_InitialFaceEngine ret 0x%x",ret.longValue()));
             System.exit(0);
         }
 
@@ -63,11 +63,11 @@ public class AFRTest {
 
         PointerByReference phFREngine = new PointerByReference();
         ret = AFR_FSDKLibrary.INSTANCE.AFR_FSDK_InitialEngine(APPID, FR_SDKKEY, pFRWorkMem, FR_WORKBUF_SIZE, phFREngine);
-        if (ret.intValue() != 0) {
+        if (ret.longValue() != 0) {
             AFD_FSDKLibrary.INSTANCE.AFD_FSDK_UninitialFaceEngine(hFDEngine);
             CLibrary.INSTANCE.free(pFDWorkMem);
             CLibrary.INSTANCE.free(pFRWorkMem);
-            System.out.println(String.format("AFR_FSDK_InitialEngine ret 0x%x" ,ret));
+            System.out.println(String.format("AFR_FSDK_InitialEngine ret 0x%x" ,ret.longValue()));
             System.exit(0);
         }
 
@@ -121,7 +121,7 @@ public class AFRTest {
         PointerByReference ppFaceRes = new PointerByReference();
         NativeLong ret = AFD_FSDKLibrary.INSTANCE.AFD_FSDK_StillImageFaceDetection(hFDEngine, inputImg, ppFaceRes);
         if (ret.longValue() != 0) {
-            System.out.println(String.format("AFD_FSDK_StillImageFaceDetection ret 0x%x" , ret));
+            System.out.println(String.format("AFD_FSDK_StillImageFaceDetection ret 0x%x" , ret.longValue()));
             return faceInfo;
         }
 
@@ -156,8 +156,8 @@ public class AFRTest {
 
         AFR_FSDK_FACEMODEL faceFeature = new AFR_FSDK_FACEMODEL();
         NativeLong ret = AFR_FSDKLibrary.INSTANCE.AFR_FSDK_ExtractFRFeature(hFREngine, inputImg, faceinput, faceFeature);
-        if (ret.intValue() != 0) {
-            System.out.println(String.format("AFR_FSDK_ExtractFRFeature ret 0x%x" ,ret));
+        if (ret.longValue() != 0) {
+            System.out.println(String.format("AFR_FSDK_ExtractFRFeature ret 0x%x" ,ret.longValue()));
             return null;
         }
 
@@ -202,8 +202,8 @@ public class AFRTest {
         NativeLong ret = AFR_FSDKLibrary.INSTANCE.AFR_FSDK_FacePairMatching(hFREngine, faceFeatureA, faceFeatureB, fSimilScore);
         faceFeatureA.freeUnmanaged();
         faceFeatureB.freeUnmanaged();
-        if (ret.intValue() != 0) {
-            System.out.println(String.format("AFR_FSDK_FacePairMatching failed:ret 0x%x" ,ret));
+        if (ret.longValue() != 0) {
+            System.out.println(String.format("AFR_FSDK_FacePairMatching failed:ret 0x%x" ,ret.longValue()));
             return 0.0f;
         }
         return fSimilScore.getValue();
