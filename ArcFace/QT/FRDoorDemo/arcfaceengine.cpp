@@ -203,8 +203,9 @@ bool ArcFaceEngine::processFrame(unsigned char *frameData, int frameWidth, int f
 		}
 	}
 
+
 	if (!hFTEngine) {
-		int ret = AFT_FSDK_InitialFaceEngine((MPChar)FT_APPID, (MPChar)FT_SDKKEY, mFTWorkMem, FT_WORKMEM_SIZE, &hFTEngine, AFT_FSDK_OPF_0_HIGHER_EXT, 16, MAX_FT_FACE);
+        int ret = AFT_FSDK_InitialFaceEngine((MPChar)APPID, (MPChar)FT_SDKKEY, mFTWorkMem, FT_WORKMEM_SIZE, &hFTEngine, AFT_FSDK_OPF_0_HIGHER_EXT, 16, MAX_FT_FACE);
 		if (ret != 0) {
 			qDebug() << "fail to AFT_FSDK_InitialFaceEngine():" << ret;
 			return false;
@@ -212,7 +213,7 @@ bool ArcFaceEngine::processFrame(unsigned char *frameData, int frameWidth, int f
 	}
 
 	if (!hFREngine) {
-		int ret = AFR_FSDK_InitialEngine((MPChar)FR_APPID, (MPChar)FR_SDKKEY, mFRWorkMem, FR_WORKMEM_SIZE, &hFREngine);
+        int ret = AFR_FSDK_InitialEngine((MPChar)APPID, (MPChar)FR_SDKKEY, mFRWorkMem, FR_WORKMEM_SIZE, &hFREngine);
 		if (ret != 0) {
 			qDebug() << "fail to AFR_FSDK_InitialEngine():" << ret;
 			return false;
@@ -245,6 +246,9 @@ bool ArcFaceEngine::processFrame(unsigned char *frameData, int frameWidth, int f
 	} else if (ASVL_PAF_YUYV == inputImg.u32PixelArrayFormat) {
 		inputImg.pi32Pitch[0] = inputImg.i32Width * 2;
 		frameSize = inputImg.i32Width*inputImg.i32Height * 2;
+    } else if (ASVL_PAF_RGB24_B8G8R8 == inputImg.u32PixelArrayFormat) {
+        inputImg.pi32Pitch[0] = inputImg.i32Width * 3;
+        frameSize = inputImg.i32Width*inputImg.i32Height * 3;
 	} else if (ASVL_PAF_RGB32_B8G8R8A8 == inputImg.u32PixelArrayFormat) {
 		inputImg.pi32Pitch[0] = inputImg.i32Width * 4;
 		frameSize = inputImg.i32Width*inputImg.i32Height * 4;

@@ -20,4 +20,5 @@ SOURCES       = \
 
 QT           += widgets  multimedia sql
 win32:LIBS       +=  -L../FRDoorDemo -llibarcsoft_fsdk_face_tracking -llibarcsoft_fsdk_face_recognition
-unix:LIBS        +=  -L../FRDoorDemo -larcsoft_fsdk_aft -larcsoft_fsdk_afr
+unix:LIBS        +=  -L../FRDoorDemo -larcsoft_fsdk_face_tracking -larcsoft_fsdk_face_recognition
+

@@ -2,7 +2,7 @@
 #define ARCFACEENGINE_H
 
 #include <QObject>
-#include <QList>
+#include <QVector>
 
 #include "asvloffscreen.h"
 #include "arcsoft_fsdk_face_recognition.h"

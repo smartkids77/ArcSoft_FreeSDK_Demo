@@ -8,9 +8,8 @@ import sqlite3
 import datetime
 import io
 
-FD_APPID = c_char_p(u'XXXXXXXXXXXXXXX'.encode('utf-8'))
+APPID = c_char_p(u'XXXXXXXXXXXXXXX'.encode('utf-8'))
 FD_SDKKEY = c_char_p(u'YYYYYYYYYYYYYYY'.encode('utf-8'))
-FR_APPID = c_char_p(u'ZZZZZZZZZZZZZZZZZZZ'.encode('utf-8'))
 FR_SDKKEY = c_char_p(u'WWWWWWWWWWWWWWWW'.encode('utf-8'))
 
 c_ubyte_p = POINTER(c_ubyte) 
@@ -92,7 +91,7 @@ if __name__ == '__main__':
     WORKBUF_SIZE = 40*1024*1024
     pFDWorkMem = libc.malloc(c_size_t(WORKBUF_SIZE))
     hFDEngine = c_void_p()
-    ret = FDlib.AFD_FSDK_InitialFaceEngine(FD_APPID, FD_SDKKEY, pFDWorkMem, c_int32(WORKBUF_SIZE), byref(hFDEngine),c_int32(5),c_int32(16),c_int32(50))
+    ret = FDlib.AFD_FSDK_InitialFaceEngine(APPID, FD_SDKKEY, pFDWorkMem, c_int32(WORKBUF_SIZE), byref(hFDEngine),c_int32(5),c_int32(16),c_int32(50))
     if ret != 0:
         print ('AFD_FSDK_InitialFaceEngine ret == 0x{:x}'.format(ret))
         exit(0)
@@ -105,7 +104,7 @@ if __name__ == '__main__':
 
     pFRWorkMem = libc.malloc(c_size_t(WORKBUF_SIZE))
     hFREngine = c_void_p()
-    ret = FRlib.AFR_FSDK_InitialEngine(FR_APPID, FR_SDKKEY, pFRWorkMem, c_int32(WORKBUF_SIZE), byref(hFREngine))
+    ret = FRlib.AFR_FSDK_InitialEngine(APPID, FR_SDKKEY, pFRWorkMem, c_int32(WORKBUF_SIZE), byref(hFREngine))
     if ret != 0:
         print ('AFR_FSDK_InitialEngine ret == 0x{:x}'.format(ret))
         exit(0)
@@ -184,9 +183,9 @@ if __name__ == '__main__':
                         imgByteIO = io.BytesIO()
                         thumbnail.save(imgByteIO, format='PNG')
                         img_bytearray = imgByteIO.getvalue()
-                        feature = create_string_buffer(facemodel.lFeatureSize)   
+                        feature = create_string_buffer(facemodel.lFeatureSize)
                         libc.memcpy(feature,facemodel.pbFeature,facemodel.lFeatureSize)
-                        db_cursor.execute(u'INSERT INTO faceinfo VALUES (?,?,?,?)', (faceid,facename,sqlite3.Binary(bytearray(feature)),sqlite3.Binary(img_bytearray)))
+                        db_cursor.execute(u'INSERT INTO faceinfo VALUES (?,?,?,?)', (faceid,facename,sqlite3.Binary(bytes(feature)),sqlite3.Binary(img_bytearray)))
                         faceid = faceid + 1
                     break
 

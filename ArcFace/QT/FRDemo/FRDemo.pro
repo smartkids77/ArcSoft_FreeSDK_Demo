@@ -15,9 +15,9 @@ SOURCES       = \
     camerasource.cpp \
     faceviewwidget.cpp \
     mainwidget.cpp \
-    videofilesource.cpp\
+    videofilesource.cpp \
     arcfaceengine.cpp
 
 QT           += widgets  multimedia
 win32:LIBS       +=  -L../FRDemo -llibarcsoft_fsdk_face_tracking -llibarcsoft_fsdk_face_recognition
-unix:LIBS        +=  -L../FRDemo -llibarcsoft_fsdk_face_tracking -llibarcsoft_fsdk_face_recognition
+unix:LIBS        +=  -L../FRDemo -larcsoft_fsdk_face_tracking -larcsoft_fsdk_face_recognition

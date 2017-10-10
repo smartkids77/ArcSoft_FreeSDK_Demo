@@ -1,6 +1,6 @@
 使用说明
-0.下载并安装QT 5.8
-1.下载并安装python 2.7 x86
+0.下载并安装QT,window请安装5.8,Linux请安装5.6
+1.下载并安装python
 2.请将下载的FT、FD和FR包里的头文件、动态库拷贝到工程根目录下
 3.请按照以下步骤,通过python脚本生成注册人脸数据库
     (1)替换initDB.py中相应的APPID和SDKKEY的值
@@ -9,11 +9,9 @@
        python initDB.py  your_face_image_directory
 4.启动QtCreator并打开工程文件FR_Door_Demo.pro
 5.新建头文件key.h,定义以下宏，并用申请的appid和sdkkey替换相应的内容
-    #define FT_APPID       "your appid"
+    #define APPID       "your appid"
     #define FT_SDKKEY      "your FT sdkkey"
-    #define FR_APPID       FT_APPID
     #define FR_SDKKEY      "your FR sdkkey"
-    注:当前FR_APPID 和FT_APPID 是同一个的
 6.编译并执行程序
 7.点击load DB按钮，选择前面生成的.db文件
 8.打开摄像头，或将视频文件拖至主窗口，开始进入检测模式

@@ -151,13 +151,9 @@ void MainWidget::loadFaceDB(){
         delete mArcFaceEngine;
         mArcFaceEngine = nullptr;
     }
-#ifdef WIN32
+
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open DB File"),QDir::currentPath(), tr("Image Files (*.db)"));
-#else
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open DB File"),
-                                                    QDir::currentPath(),"",nullptr,
-                                                    QFileDialog::DontUseNativeDialog, tr("Image Files (*.db)"));
-#endif
+
     if (!fileName.isEmpty()) {
         QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
         db.setDatabaseName(fileName);

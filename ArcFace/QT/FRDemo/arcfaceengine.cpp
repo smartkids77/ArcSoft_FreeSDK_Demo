@@ -31,7 +31,7 @@ ArcFaceEngine::ArcFaceEngine()
      hFREngine = nullptr;
 
 
-     int ret = AFT_FSDK_InitialFaceEngine((MPChar)FT_APPID, (MPChar)FT_SDKKEY, mFTWorkMem, ft_workmem_size, &hFTEngine, AFT_FSDK_OPF_0_HIGHER_EXT, 16, MAX_FT_FACE);
+     int ret = AFT_FSDK_InitialFaceEngine((MPChar)APPID, (MPChar)FT_SDKKEY, mFTWorkMem, ft_workmem_size, &hFTEngine, AFT_FSDK_OPF_0_HIGHER_EXT, 16, MAX_FT_FACE);
      if(ret != 0){
          qDebug() <<"fail to AFT_FSDK_InitialFaceEngine():"<<ret;
          return;
@@ -46,7 +46,7 @@ ArcFaceEngine::ArcFaceEngine()
     }
 #endif
 
-     ret = AFR_FSDK_InitialEngine((MPChar)FR_APPID, (MPChar)FR_SDKKEY, mFRWorkMem, fr_workmem_size, &hFREngine);
+     ret = AFR_FSDK_InitialEngine((MPChar)APPID, (MPChar)FR_SDKKEY, mFRWorkMem, fr_workmem_size, &hFREngine);
      if(ret != 0){
          qDebug() <<"fail to AFR_FSDK_InitialEngine():"<<ret;
          return;
