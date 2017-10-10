@@ -1,6 +1,8 @@
-1.请将SDK里的dll放到readme.txt同级目录下
-    libarcsoft_fsdk_face_detection.dll 
+1.请将SDK里的动态库放到readme.txt同级目录下
+    libarcsoft_fsdk_face_detection.dll
     libarcsoft_fsdk_face_recognition.dll
+  或libarcsoft_fsdk_face_detection.so
+    libarcsoft_fsdk_face_recognition.so
 2.32位SDK搭配使用32位的nodejs,64位SDK搭配使用64位的nodejs,否则会失败。
 3.依赖 ref ffi ref-struct ref-array
     npm install ffi --dev

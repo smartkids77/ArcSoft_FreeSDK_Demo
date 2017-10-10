@@ -40,8 +40,8 @@ var AFD_FSDK_Version = StructType({
 
 var AFD_FSDK_FACERES = StructType({
     nFace:base.MInt32,
-    rcFace:base.MLong,
-    lfaceOrient:base.MLong
+    rcFace:base.MIntPtr_t,
+    lfaceOrient:base.MIntPtr_t
 });
 
 var LPAFD_FSDK_FACERES = StructType({

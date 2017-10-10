@@ -16,6 +16,12 @@ var Format = {
 var MInt32 = ref.types.int32;
 var MUInt32 = ref.types.uint32;
 var MLong = ref.types.long;
+var MIntPtr_t;
+if(process.arch == 'x64'){
+    MIntPtr_t = ref.types.uint64;
+}else{
+    MIntPtr_t = ref.types.uint32;
+}
 var MPChar = ref.types.CString;
 var MHandleType = ref.refType(ref.types.void); 
 var MHandleRefType = ref.refType(MHandleType); 
@@ -38,7 +44,7 @@ var MRECT = StructType({
 
 var libc_name = process.platform == 'win32' ? 'msvcrt' : 'libc';
 var CLibrary = ffi.Library(libc_name, {
-    'memcpy': [ ref.refType(ref.types.void), [ ref.types.long,ref.types.long,ref.types.size_t] ],
+    'memcpy': [ ref.refType(ref.types.void), [ MIntPtr_t,MIntPtr_t,ref.types.size_t] ],
     'malloc': [ ref.refType(ref.types.void), [ ref.types.size_t] ],
     'free': [ ref.types.void, [ref.refType(ref.types.void)] ]
 });
@@ -178,6 +184,7 @@ exports.ASVLOFFSCREEN = ASVLOFFSCREEN;
 exports.Format = Format;
 exports.MInt32 = MInt32;
 exports.MLong = MLong;
+exports.MIntPtr_t = MIntPtr_t;
 exports.MPChar = MPChar;
 exports.MHandleType = MHandleType; 
 exports.MHandleRefType = MHandleRefType; 

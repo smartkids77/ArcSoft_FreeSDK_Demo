@@ -17,7 +17,7 @@ var FR_WORKBUF_SIZE = 40*1024*1024;
 var pFDWorkMem = ArcSoftBase.malloc(FD_WORKBUF_SIZE);
 var pFRWorkMem = ArcSoftBase.malloc(FR_WORKBUF_SIZE);
 
-var phFDEngine = ref.ref(new Buffer(ref.types.long.size));
+var phFDEngine = ref.ref(new Buffer(ArcSoftBase.MIntPtr_t.size));
 var ret = ArcSoftFD.AFD_FSDK_InitialFaceEngine(APPID,FD_SDKKEY,pFDWorkMem,FD_WORKBUF_SIZE,phFDEngine,ArcSoftFD.OrientPriority.AFD_FSDK_OPF_0_HIGHER_EXT,16,MAX_FACE_NUM);
 if(ret != 0){
     ArcSoftBase.free(pFDWorkMem);
@@ -35,7 +35,7 @@ console.log(versionFD.Version);
 console.log(versionFD.BuildDate);
 console.log(versionFD.CopyRight);
 
-var phFREngine = ref.ref(new Buffer(ref.types.long.size));
+var phFREngine = ref.ref(new Buffer(ArcSoftBase.MIntPtr_t.size));
 ret = ArcSoftFR.AFR_FSDK_InitialEngine(APPID, FR_SDKKEY, pFRWorkMem, FR_WORKBUF_SIZE, phFREngine);
 if (ret != 0) {
     ArcSoftFD.AFD_FSDK_UninitialFaceEngine(hFDEngine);
