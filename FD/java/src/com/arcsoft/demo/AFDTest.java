@@ -28,7 +28,7 @@ public class AFDTest {
     public static final int FD_WORKBUF_SIZE = 20 * 1024 * 1024;
     public static final int MAX_FACE_NUM = 50;
 
-    public static final boolean bUseYUVFile = false;
+    public static final boolean bUseRAWFile = false;
 
     public static void main(String[] args) {
         System.out.println("#####################################################");
@@ -54,17 +54,17 @@ public class AFDTest {
 
         // load Image Data
         ASVLOFFSCREEN inputImg;
-        if (bUseYUVFile) {
+        if (bUseRAWFile) {
             String filePath = "001_640x480_I420.YUV";
             int yuv_width = 640;
             int yuv_height = 480;
             int yuv_format = ASVL_COLOR_FORMAT.ASVL_PAF_I420;
 
-            inputImg = loadYUVImage(filePath, yuv_width, yuv_height, yuv_format);
+            inputImg = loadRAWImage(filePath, yuv_width, yuv_height, yuv_format);
         } else {
             String filePath = "003.jpg";
 
-            inputImg = loadImage(filePath);
+            inputImg = loadImage(filePath, ASVL_COLOR_FORMAT.ASVL_PAF_BGR);
         }
 
         // do Face Detect
@@ -109,8 +109,8 @@ public class AFDTest {
         }
         return faceInfo;
     }
-
-    public static ASVLOFFSCREEN loadYUVImage(String yuv_filePath, int yuv_width, int yuv_height, int yuv_format) {
+    
+    public static ASVLOFFSCREEN loadRAWImage(String yuv_filePath, int yuv_width, int yuv_height, int yuv_format) {
         int yuv_rawdata_size = 0;
 
         ASVLOFFSCREEN inputImg = new ASVLOFFSCREEN();
@@ -133,6 +133,9 @@ public class AFDTest {
         } else if (ASVL_COLOR_FORMAT.ASVL_PAF_YUYV == inputImg.u32PixelArrayFormat) {
             inputImg.pi32Pitch[0] = inputImg.i32Width * 2;
             yuv_rawdata_size = inputImg.i32Width * inputImg.i32Height * 2;
+        } else if (ASVL_COLOR_FORMAT.ASVL_PAF_BGR == inputImg.u32PixelArrayFormat) {
+        	inputImg.pi32Pitch[0] = inputImg.i32Width * 3;
+            yuv_rawdata_size = inputImg.i32Width * inputImg.i32Height * 3;
         } else {
             System.out.println("unsupported  yuv format");
             System.exit(0);
@@ -187,6 +190,12 @@ public class AFDTest {
             inputImg.ppu8Plane[1] = Pointer.NULL;
             inputImg.ppu8Plane[2] = Pointer.NULL;
             inputImg.ppu8Plane[3] = Pointer.NULL;
+        } else if (ASVL_COLOR_FORMAT.ASVL_PAF_BGR == inputImg.u32PixelArrayFormat) {
+        	inputImg.ppu8Plane[0] = new Memory(imagedata.length);
+            inputImg.ppu8Plane[0].write(0, imagedata, 0, imagedata.length);
+            inputImg.ppu8Plane[1] = Pointer.NULL;
+            inputImg.ppu8Plane[2] = Pointer.NULL;
+            inputImg.ppu8Plane[3] = Pointer.NULL;
         } else {
             System.out.println("unsupported yuv format");
             System.exit(0);
@@ -196,24 +205,37 @@ public class AFDTest {
         return inputImg;
     }
 
-    public static ASVLOFFSCREEN loadImage(String filePath) {
-        BufferInfo bufferInfo = ImageLoader.getI420FromFile(filePath);
+    public static ASVLOFFSCREEN loadImage(String filePath, int format) {
+    	ASVLOFFSCREEN inputImg = new ASVLOFFSCREEN();
+    	inputImg.u32PixelArrayFormat = format;
+	        
+    	if (format == ASVL_COLOR_FORMAT.ASVL_PAF_I420) {
+	        BufferInfo bufferInfo = ImageLoader.getI420FromFile(filePath);
+	        inputImg.i32Width = bufferInfo.width;
+	        inputImg.i32Height = bufferInfo.height;
+	        inputImg.pi32Pitch[0] = inputImg.i32Width;
+	        inputImg.pi32Pitch[1] = inputImg.i32Width / 2;
+	        inputImg.pi32Pitch[2] = inputImg.i32Width / 2;
+	        inputImg.ppu8Plane[0] = new Memory(inputImg.pi32Pitch[0] * inputImg.i32Height);
+	        inputImg.ppu8Plane[0].write(0, bufferInfo.buffer, 0, inputImg.pi32Pitch[0] * inputImg.i32Height);
+	        inputImg.ppu8Plane[1] = new Memory(inputImg.pi32Pitch[1] * inputImg.i32Height / 2);
+	        inputImg.ppu8Plane[1].write(0, bufferInfo.buffer, inputImg.pi32Pitch[0] * inputImg.i32Height, inputImg.pi32Pitch[1] * inputImg.i32Height / 2);
+	        inputImg.ppu8Plane[2] = new Memory(inputImg.pi32Pitch[2] * inputImg.i32Height / 2);
+	        inputImg.ppu8Plane[2].write(0, bufferInfo.buffer, inputImg.pi32Pitch[0] * inputImg.i32Height + inputImg.pi32Pitch[1] * inputImg.i32Height / 2, inputImg.pi32Pitch[2] * inputImg.i32Height / 2);
+	        inputImg.ppu8Plane[3] = Pointer.NULL;
 
-        ASVLOFFSCREEN inputImg = new ASVLOFFSCREEN();
-        inputImg.u32PixelArrayFormat = ASVL_COLOR_FORMAT.ASVL_PAF_I420;
-        inputImg.i32Width = bufferInfo.width;
-        inputImg.i32Height = bufferInfo.height;
-        inputImg.pi32Pitch[0] = inputImg.i32Width;
-        inputImg.pi32Pitch[1] = inputImg.i32Width / 2;
-        inputImg.pi32Pitch[2] = inputImg.i32Width / 2;
-        inputImg.ppu8Plane[0] = new Memory(inputImg.pi32Pitch[0] * inputImg.i32Height);
-        inputImg.ppu8Plane[0].write(0, bufferInfo.buffer, 0, inputImg.pi32Pitch[0] * inputImg.i32Height);
-        inputImg.ppu8Plane[1] = new Memory(inputImg.pi32Pitch[1] * inputImg.i32Height / 2);
-        inputImg.ppu8Plane[1].write(0, bufferInfo.buffer, inputImg.pi32Pitch[0] * inputImg.i32Height, inputImg.pi32Pitch[1] * inputImg.i32Height / 2);
-        inputImg.ppu8Plane[2] = new Memory(inputImg.pi32Pitch[2] * inputImg.i32Height / 2);
-        inputImg.ppu8Plane[2].write(0, bufferInfo.buffer, inputImg.pi32Pitch[0] * inputImg.i32Height + inputImg.pi32Pitch[1] * inputImg.i32Height / 2, inputImg.pi32Pitch[2] * inputImg.i32Height / 2);
-        inputImg.ppu8Plane[3] = Pointer.NULL;
-
+    	} else if (format == ASVL_COLOR_FORMAT.ASVL_PAF_BGR) {
+    		BufferInfo bufferInfo = ImageLoader.getBGRFromFile(filePath);
+    		inputImg.i32Width = bufferInfo.width;
+    	    inputImg.i32Height = bufferInfo.height;
+	        inputImg.pi32Pitch[0] = inputImg.i32Width * 3;
+	        inputImg.ppu8Plane[0] = new Memory(inputImg.pi32Pitch[0] * inputImg.i32Height);
+	        inputImg.ppu8Plane[0].write(0, bufferInfo.buffer, 0, inputImg.pi32Pitch[0] * inputImg.i32Height);
+	        inputImg.ppu8Plane[1] = Pointer.NULL;
+	        inputImg.ppu8Plane[2] = Pointer.NULL;
+	        inputImg.ppu8Plane[3] = Pointer.NULL;
+    	}
+    	
         inputImg.setAutoRead(false);
         return inputImg;
     }
