@@ -1,12 +1,34 @@
 package com.arcsoft.utils;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+
 import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
 
 public class ImageLoader {
 
+	public static BufferInfo getBGRFromFile(String filePath) {
+		byte[] data = null;
+        int w = 0;
+        int h = 0;
+        try {
+            BufferedImage img = ImageIO.read(new File(filePath));
+            if (((img.getWidth() & 0x1) != 0) || ((img.getHeight() & 0x1) != 0)) {
+                img = img.getSubimage(0, 0, img.getWidth() & 0xFFFFFFFE, img.getHeight() & 0xFFFFFFFE);
+            }
+            w = img.getWidth();
+            h = img.getHeight();
+            BufferedImage bgrimg = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
+            bgrimg.setRGB(0, 0, w, h, img.getRGB(0, 0, w, h, null, 0, w), 0, w);
+            data = ((DataBufferByte)bgrimg.getRaster().getDataBuffer()).getData();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return new BufferInfo(w, h, data);
+	}
+	
     public static BufferInfo getI420FromFile(String filePath) {
         byte[] yuv = null;
         int w = 0;
