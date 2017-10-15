@@ -1,6 +1,7 @@
 package com.arcsoft.utils;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
 import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
@@ -40,16 +41,9 @@ public class ImageLoader {
             BufferedImage img = ImageIO.read(new File(filePath));
             width = img.getWidth();
             height = img.getHeight();
-            int[] bgra = img.getRGB(0, 0, width, height, null, 0, width);
-            bgr = new byte[width * height * 3];
-            for (int i = 0; i < height; i++) {
-                for (int j = 0; j < width; j++) {
-                    int bgra_int = bgra[i * width + j] & 0x00FFFFFF;
-                    bgr[(i * width + j)*3+0] = (byte)(bgra_int & 0xFF);
-                    bgr[(i * width + j)*3+1] = (byte) ((bgra_int >> 8) & 0xFF);
-                    bgr[(i * width + j)*3+2] = (byte) ((bgra_int >> 16) & 0xFF);
-                }
-            }
+            BufferedImage bgrimg = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
+            bgrimg.setRGB(0, 0, width, height, img.getRGB(0, 0, width, height, null, 0, width), 0, width);
+            bgr = ((DataBufferByte)bgrimg.getRaster().getDataBuffer()).getData();
 
         } catch (IOException e) {
             e.printStackTrace();
