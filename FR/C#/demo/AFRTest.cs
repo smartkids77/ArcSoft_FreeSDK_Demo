@@ -29,7 +29,7 @@ namespace arcsoft
                 IntPtr pFRWorkMem = Marshal.AllocCoTaskMem(FR_WORKBUF_SIZE);
 
                 IntPtr hFDEngine = new IntPtr(0);
-                IntPtr ret = AFD_FSDKLibrary.AFD_FSDK_InitialFaceEngine(APPID, FD_SDKKEY, pFDWorkMem, FD_WORKBUF_SIZE, ref(hFDEngine), _AFD_FSDK_OrientPriority.AFD_FSDK_OPF_0_HIGHER_EXT, 16, MAX_FACE_NUM);
+                IntPtr ret = AFD_FSDKLibrary.AFD_FSDK_InitialFaceEngine(APPID, FD_SDKKEY, pFDWorkMem, FD_WORKBUF_SIZE, ref(hFDEngine), _AFD_FSDK_OrientPriority.AFD_FSDK_OPF_0_HIGHER_EXT, 32, MAX_FACE_NUM);
                 if (ret.ToInt64() != 0)
                 {
                     Marshal.FreeCoTaskMem(pFDWorkMem);

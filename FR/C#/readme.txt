@@ -1,5 +1,5 @@
 1.配置工程
-  Windows (Viusal stuido):以readme.txt所在目录为工作目录
+  Windows (Visual stuido):以readme.txt所在目录为工作目录
     请将SDK里的动态库放到该工作目录下，同时在工程配置中将工作目录配置到
     <StartWorkingDirectory>../../../</StartWorkingDirectory>
   Linux (MonoDevelop):以"readme.txt所在目录/bin/Debug/"为默认工作目录
