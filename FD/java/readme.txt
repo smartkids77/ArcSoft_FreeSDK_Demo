@@ -8,12 +8,12 @@ Linux:请将SDK里的动态库放到 {readme.txt同级目录}/bin/linux-x86-64/ 
     public static final String FD_SDKKEY = "YYYYYYYYYY";
 5.请设置好图像文件路径、图像大小和颜色格式
     输入图支持YUV JPG PNG BMP
-    if(bUseYUVFile){
+    if(bUseRAWFile){
         String filePath = "001_640x480_I420.YUV";
         int yuv_width = 640;
         int yuv_height = 480;
         int yuv_format = ASVL_COLOR_FORMAT.ASVL_PAF_I420;
-        inputImg = loadYUVImage(filePath,yuv_width,yuv_height,yuv_format);
+        inputImg = loadRAWImage(filePath,yuv_width,yuv_height,yuv_format);
     }else{
         String filePath = "003.jpg";
         inputImg = loadImage(filePath);

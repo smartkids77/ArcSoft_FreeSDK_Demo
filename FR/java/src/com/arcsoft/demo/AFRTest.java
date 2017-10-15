@@ -35,7 +35,7 @@ public class AFRTest {
     public static final int FR_WORKBUF_SIZE = 40 * 1024 * 1024;
     public static final int MAX_FACE_NUM = 50;
 
-    public static final boolean bUseYUVFile = false;
+    public static final boolean bUseRAWFile = false;
     public static final boolean bUseBGRToEngine = true;
 
     public static void main(String[] args) {
@@ -83,7 +83,7 @@ public class AFRTest {
         // load Image Data
         ASVLOFFSCREEN inputImgA;
         ASVLOFFSCREEN inputImgB;
-        if (bUseYUVFile) {
+        if (bUseRAWFile) {
             String filePathA = "001_640x480_I420.YUV";
             int yuv_widthA = 640;
             int yuv_heightA = 480;
@@ -94,8 +94,8 @@ public class AFRTest {
             int yuv_heightB = 480;
             int yuv_formatB = ASVL_COLOR_FORMAT.ASVL_PAF_I420;
 
-            inputImgA = loadYUVImage(filePathA, yuv_widthA, yuv_heightA, yuv_formatA);
-            inputImgB = loadYUVImage(filePathB, yuv_widthB, yuv_heightB, yuv_formatB);
+            inputImgA = loadRAWImage(filePathA, yuv_widthA, yuv_heightA, yuv_formatA);
+            inputImgB = loadRAWImage(filePathB, yuv_widthB, yuv_heightB, yuv_formatB);
         } else {
             String filePathA = "6.jpg";
             String filePathB = "1_9.jpg";
@@ -210,7 +210,7 @@ public class AFRTest {
         return fSimilScore.getValue();
     }
 
-    public static ASVLOFFSCREEN loadYUVImage(String yuv_filePath, int yuv_width, int yuv_height, int yuv_format) {
+    public static ASVLOFFSCREEN loadRAWImage(String yuv_filePath, int yuv_width, int yuv_height, int yuv_format) {
         int yuv_rawdata_size = 0;
 
         ASVLOFFSCREEN inputImg = new ASVLOFFSCREEN();
@@ -233,6 +233,9 @@ public class AFRTest {
         } else if (ASVL_COLOR_FORMAT.ASVL_PAF_YUYV == inputImg.u32PixelArrayFormat) {
             inputImg.pi32Pitch[0] = inputImg.i32Width * 2;
             yuv_rawdata_size = inputImg.i32Width * inputImg.i32Height * 2;
+        } else if (ASVL_COLOR_FORMAT.ASVL_PAF_RGB24_B8G8R8 == inputImg.u32PixelArrayFormat) {
+            inputImg.pi32Pitch[0] = inputImg.i32Width * 3;
+            yuv_rawdata_size = inputImg.i32Width * inputImg.i32Height * 3;
         } else {
             System.out.println("unsupported  yuv format");
             System.exit(0);
@@ -284,6 +287,12 @@ public class AFRTest {
         } else if (ASVL_COLOR_FORMAT.ASVL_PAF_YUYV == inputImg.u32PixelArrayFormat) {
             inputImg.ppu8Plane[0] = new Memory(inputImg.pi32Pitch[0] * inputImg.i32Height);
             inputImg.ppu8Plane[0].write(0, imagedata, 0, inputImg.pi32Pitch[0] * inputImg.i32Height);
+            inputImg.ppu8Plane[1] = Pointer.NULL;
+            inputImg.ppu8Plane[2] = Pointer.NULL;
+            inputImg.ppu8Plane[3] = Pointer.NULL;
+        } else if (ASVL_COLOR_FORMAT.ASVL_PAF_RGB24_B8G8R8 == inputImg.u32PixelArrayFormat) {
+            inputImg.ppu8Plane[0] = new Memory(imagedata.length);
+            inputImg.ppu8Plane[0].write(0, imagedata, 0, imagedata.length);
             inputImg.ppu8Plane[1] = Pointer.NULL;
             inputImg.ppu8Plane[2] = Pointer.NULL;
             inputImg.ppu8Plane[3] = Pointer.NULL;

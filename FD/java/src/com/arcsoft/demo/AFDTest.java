@@ -28,7 +28,7 @@ public class AFDTest {
     public static final int FD_WORKBUF_SIZE = 20 * 1024 * 1024;
     public static final int MAX_FACE_NUM = 50;
 
-    public static final boolean bUseYUVFile = false;
+    public static final boolean bUseRAWFile = false;
     public static final boolean bUseBGRToEngine = true;
 
     public static void main(String[] args) {
@@ -134,6 +134,9 @@ public class AFDTest {
         } else if (ASVL_COLOR_FORMAT.ASVL_PAF_YUYV == inputImg.u32PixelArrayFormat) {
             inputImg.pi32Pitch[0] = inputImg.i32Width * 2;
             yuv_rawdata_size = inputImg.i32Width * inputImg.i32Height * 2;
+        } else if (ASVL_COLOR_FORMAT.ASVL_PAF_RGB24_B8G8R8 == inputImg.u32PixelArrayFormat) {
+            inputImg.pi32Pitch[0] = inputImg.i32Width * 3;
+            yuv_rawdata_size = inputImg.i32Width * inputImg.i32Height * 3;
         } else {
             System.out.println("unsupported  yuv format");
             System.exit(0);
@@ -185,6 +188,12 @@ public class AFDTest {
         } else if (ASVL_COLOR_FORMAT.ASVL_PAF_YUYV == inputImg.u32PixelArrayFormat) {
             inputImg.ppu8Plane[0] = new Memory(inputImg.pi32Pitch[0] * inputImg.i32Height);
             inputImg.ppu8Plane[0].write(0, imagedata, 0, inputImg.pi32Pitch[0] * inputImg.i32Height);
+            inputImg.ppu8Plane[1] = Pointer.NULL;
+            inputImg.ppu8Plane[2] = Pointer.NULL;
+            inputImg.ppu8Plane[3] = Pointer.NULL;
+        } else if (ASVL_COLOR_FORMAT.ASVL_PAF_RGB24_B8G8R8 == inputImg.u32PixelArrayFormat) {
+            inputImg.ppu8Plane[0] = new Memory(imagedata.length);
+            inputImg.ppu8Plane[0].write(0, imagedata, 0, imagedata.length);
             inputImg.ppu8Plane[1] = Pointer.NULL;
             inputImg.ppu8Plane[2] = Pointer.NULL;
             inputImg.ppu8Plane[3] = Pointer.NULL;
