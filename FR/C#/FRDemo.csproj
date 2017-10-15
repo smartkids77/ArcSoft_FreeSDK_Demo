@@ -110,7 +110,6 @@
     <Compile Include="AFR_FSDK_Version.cs" />
     <Compile Include="ASVLOFFSCREEN.cs" />
     <Compile Include="ASVL_COLOR_FORMAT.cs" />
-    <Compile Include="CLibrary.cs" />
     <Compile Include="demo\AFRTest.cs" />
     <Compile Include="FaceInfo.cs" />
     <Compile Include="MRECT.cs" />

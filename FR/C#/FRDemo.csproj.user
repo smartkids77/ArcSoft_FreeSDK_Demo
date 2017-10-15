@@ -22,7 +22,4 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <StartWorkingDirectory>../../../</StartWorkingDirectory>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <StartWorkingDirectory>../../../</StartWorkingDirectory>
-  </PropertyGroup>
 </Project>

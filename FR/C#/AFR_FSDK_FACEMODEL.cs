@@ -22,7 +22,9 @@ namespace arcsoft {
             AFR_FSDK_FACEMODEL feature = new AFR_FSDK_FACEMODEL(); 
             feature.lFeatureSize = lFeatureSize;
             feature.pbFeature = Marshal.AllocCoTaskMem(feature.lFeatureSize);
-            CLibrary.memcpy(feature.pbFeature, pbFeature, feature.lFeatureSize);
+            byte[] tmp_pFeature = new byte[feature.lFeatureSize];
+            Marshal.Copy(pbFeature, tmp_pFeature, 0, feature.lFeatureSize);
+            Marshal.Copy(tmp_pFeature, 0, feature.pbFeature, feature.lFeatureSize);
             return feature;
         }
 
