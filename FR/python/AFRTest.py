@@ -14,6 +14,7 @@ FD_WORKBUF_SIZE = 20 * 1024 * 1024
 FR_WORKBUF_SIZE = 40 * 1024 * 1024
 MAX_FACE_NUM = 50
 bUseYUVFile = False
+bUseBGRToEngine = True
 
 def doFaceDetection(hFDEngine, inputImg):
     faceInfo = []
@@ -110,6 +111,9 @@ def loadYUVImage(yuv_filePath, yuv_width, yuv_height, yuv_format):
     elif ASVL_COLOR_FORMAT.ASVL_PAF_YUYV == inputImg.u32PixelArrayFormat:
         inputImg.pi32Pitch[0] = inputImg.i32Width * 2
         yuv_rawdata_size = inputImg.i32Width * inputImg.i32Height * 2
+    elif ASVL_COLOR_FORMAT.ASVL_PAF_RGB24_B8G8R8 == inputImg.u32PixelArrayFormat:
+        inputImg.pi32Pitch[0] = inputImg.i32Width * 3
+        yuv_rawdata_size = inputImg.i32Width * inputImg.i32Height * 3
     else:
         print(u'unsupported  yuv format')
         exit(0)
@@ -147,6 +151,11 @@ def loadYUVImage(yuv_filePath, yuv_width, yuv_height, yuv_format):
         inputImg.ppu8Plane[1] = cast(0, c_ubyte_p)
         inputImg.ppu8Plane[2] = cast(0, c_ubyte_p)
         inputImg.ppu8Plane[3] = cast(0, c_ubyte_p)
+    elif ASVL_COLOR_FORMAT.ASVL_PAF_RGB24_B8G8R8 == inputImg.u32PixelArrayFormat:
+        inputImg.ppu8Plane[0] = cast(imagedata, c_ubyte_p)
+        inputImg.ppu8Plane[1] = cast(0, c_ubyte_p)
+        inputImg.ppu8Plane[2] = cast(0, c_ubyte_p)
+        inputImg.ppu8Plane[3] = cast(0, c_ubyte_p)
     else:
         print(u'unsupported yuv format')
         exit(0)
@@ -155,19 +164,30 @@ def loadYUVImage(yuv_filePath, yuv_width, yuv_height, yuv_format):
     return inputImg
 
 def loadImage(filePath):
-    bufferInfo = ImageLoader.getI420FromFile(filePath)
-    inputImg = ASVLOFFSCREEN()
-    inputImg.u32PixelArrayFormat = ASVL_COLOR_FORMAT.ASVL_PAF_I420
-    inputImg.i32Width = bufferInfo.width
-    inputImg.i32Height = bufferInfo.height
-    inputImg.pi32Pitch[0] = inputImg.i32Width
-    inputImg.pi32Pitch[1] = inputImg.i32Width // 2
-    inputImg.pi32Pitch[2] = inputImg.i32Width // 2
-    inputImg.ppu8Plane[0] = cast(bufferInfo.buffer, c_ubyte_p)
-    inputImg.ppu8Plane[1] = cast(addressof(inputImg.ppu8Plane[0].contents) + (inputImg.pi32Pitch[0] * inputImg.i32Height), c_ubyte_p)
-    inputImg.ppu8Plane[2] = cast(addressof(inputImg.ppu8Plane[1].contents) + (inputImg.pi32Pitch[1] * inputImg.i32Height // 2), c_ubyte_p)
-    inputImg.ppu8Plane[3] = cast(0, c_ubyte_p)
 
+    inputImg = ASVLOFFSCREEN()
+    if bUseBGRToEngine:
+        bufferInfo = ImageLoader.getBGRFromFile(filePath)
+        inputImg.u32PixelArrayFormat = ASVL_COLOR_FORMAT.ASVL_PAF_RGB24_B8G8R8
+        inputImg.i32Width = bufferInfo.width
+        inputImg.i32Height = bufferInfo.height
+        inputImg.pi32Pitch[0] = bufferInfo.width*3
+        inputImg.ppu8Plane[0] = cast(bufferInfo.buffer, c_ubyte_p)
+        inputImg.ppu8Plane[1] = cast(0, c_ubyte_p)
+        inputImg.ppu8Plane[2] = cast(0, c_ubyte_p)
+        inputImg.ppu8Plane[3] = cast(0, c_ubyte_p)
+    else:
+        bufferInfo = ImageLoader.getI420FromFile(filePath)
+        inputImg.u32PixelArrayFormat = ASVL_COLOR_FORMAT.ASVL_PAF_I420
+        inputImg.i32Width = bufferInfo.width
+        inputImg.i32Height = bufferInfo.height
+        inputImg.pi32Pitch[0] = inputImg.i32Width
+        inputImg.pi32Pitch[1] = inputImg.i32Width // 2
+        inputImg.pi32Pitch[2] = inputImg.i32Width // 2
+        inputImg.ppu8Plane[0] = cast(bufferInfo.buffer, c_ubyte_p)
+        inputImg.ppu8Plane[1] = cast(addressof(inputImg.ppu8Plane[0].contents) + (inputImg.pi32Pitch[0] * inputImg.i32Height), c_ubyte_p)
+        inputImg.ppu8Plane[2] = cast(addressof(inputImg.ppu8Plane[1].contents) + (inputImg.pi32Pitch[1] * inputImg.i32Height // 2), c_ubyte_p)
+        inputImg.ppu8Plane[3] = cast(0, c_ubyte_p)
     inputImg.gc_ppu8Plane0 = bufferInfo.buffer
 
     return inputImg
@@ -181,7 +201,7 @@ if __name__ == u'__main__':
     pFRWorkMem = CLibrary.malloc(c_size_t(FR_WORKBUF_SIZE))
 
     hFDEngine = c_void_p()
-    ret = AFD_FSDK_InitialFaceEngine(APPID, FD_SDKKEY, pFDWorkMem, c_int32(FD_WORKBUF_SIZE), byref(hFDEngine), AFD_FSDK_OPF_0_HIGHER_EXT, 16, MAX_FACE_NUM)
+    ret = AFD_FSDK_InitialFaceEngine(APPID, FD_SDKKEY, pFDWorkMem, c_int32(FD_WORKBUF_SIZE), byref(hFDEngine), AFD_FSDK_OPF_0_HIGHER_EXT, 32, MAX_FACE_NUM)
     if ret != 0:
         CLibrary.free(pFDWorkMem)
         print(u'AFD_FSDK_InitialFaceEngine ret 0x{:x}'.format(ret))
