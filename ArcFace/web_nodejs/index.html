@@ -1,0 +1,223 @@
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>ArcFace Web Demo</title>
+    <script src="jquery-3.2.1.min.js"></script>
+    <style type="text/css">
+    .main {
+        text-align: center;
+    }
+
+    #left_container {
+        float: left;
+        margin-top: 5vw;
+        margin-left: 5vw;
+        width: 40vw;
+    }
+
+    #right_container {
+        float: right;
+        margin-top: 5vw;
+        margin-right: 5vw;
+        width: 40vw;
+    }
+
+    #middle_container_trick {
+        position:absolute;
+        z-index:100;
+        left: 50%;
+    }
+
+    #middle_container {
+        position:relative;
+        left: -50%;
+    }
+
+    .image_container {
+        position: relative;
+        margin-top: 3vw;
+    }
+
+    .realimage {
+        width: 40vw;
+    }
+
+    .upload_btn {
+        margin-top: 3vw;
+    }
+
+    .upload_input {
+        display: none;
+    }
+
+    .rectangle {
+        border-style: solid;
+        border-top-width: 2px;
+        border-right-width: 2px;
+        border-bottom-width: 2px;
+        border-left-width: 2px;
+        position: absolute;
+    }
+
+    .selected {
+        border-color: red;
+    }
+
+    .noselect {
+        border-color: white;
+    }
+
+    select {
+        margin-top: 1vw;
+    }
+    </style>
+</head>
+
+<body>
+    <div class="main">
+        <div id="left_container">
+            <input type="button" class="upload_btn" value="Upload Image" onclick="this.nextElementSibling.click();" />
+            <input type="file" class="upload_input" onchange="loadImage(this);" />
+            <div class="image_container">
+                <img class="realimage" src="#" alt="" />
+            </div>
+        </div>
+        <div id="right_container">
+            <input type="button" class="upload_btn" value="Upload Image" onclick="this.nextElementSibling.click();" />
+            <input type="file" class="upload_input" onchange="loadImage(this);" />
+            <div class="image_container">
+                <img class="realimage" src="#" alt="" />
+            </div>
+        </div>
+        <div id="middle_container_trick">
+            <div id="middle_container">
+             </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+    "use strict";
+
+    function doFR() {
+        var middle_container = document.querySelector('#middle_container');
+        middle_container.innerHTML = '';
+        var left_container = document.querySelector('#left_container');
+        var right_container = document.querySelector('#right_container');
+        var leftFaceCount = left_container.querySelectorAll('.rectangle').length;
+        var rightFaceCount = right_container.querySelectorAll('.rectangle').length;
+        if ((leftFaceCount > 0) && (rightFaceCount > 0)) {
+            var leftFaceIndex = left_container.querySelector('select').value;
+            if (leftFaceIndex < leftFaceCount) {
+                var rightFaceIndex = right_container.querySelector('select').value;
+                if (rightFaceIndex < rightFaceCount) {
+                    var frImageData = {};
+                    frImageData.leftImage = left_container.querySelector('.realimage').src;
+                    frImageData.leftIndex = leftFaceIndex;
+                    frImageData.rightImage = right_container.querySelector('.realimage').src;
+                    frImageData.rightIndex = rightFaceIndex;
+                    $.ajax({
+                        type: 'POST',
+                        url: 'dofr',
+                        data: JSON.stringify(frImageData),
+                        success: function(fr_result, textStatus, jqXHR) {
+                            if (fr_result.error == 0) {
+                                middle_container.innerHTML = '<p> similarity ' + fr_result.score + '</p>';
+                            } else {
+                                middle_container.innerHTML = '<p>' + fr_result.message + '</p>';
+                            }
+                        },
+                        dataType: 'json'
+                    });
+                }
+            }
+        }
+    }
+
+    function loadImage(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            var img = input.parentElement.querySelector('.realimage')
+            reader.onload = function(event) {
+                img.src = event.target.result;
+                var image_container = img.parentElement;
+                var face_rectangles = image_container.querySelectorAll('.rectangle')
+                for (var i = 0; i < face_rectangles.length; i++) {
+                    image_container.removeChild(face_rectangles[i]);
+                }
+                $.ajax({
+                    type: 'POST',
+                    url: 'dofd',
+                    data: img.src,
+                    success: function(faces, textStatus, jqXHR) {
+                        var width = img.naturalWidth;
+                        var height = img.naturalHeight;
+                        var display_width = img.clientWidth;
+                        var display_height = img.clientHeight;
+                        var face_rectangles = image_container.querySelectorAll('.rectangle')
+                        for (var i = 0; i < face_rectangles.length; i++) {
+                            image_container.removeChild(face_rectangles[i]);
+                        }
+
+                        var selectElement = image_container.querySelector('select')
+                        if (selectElement != null) {
+                            image_container.removeChild(selectElement);
+                            selectElement = null;
+                        }
+
+                        for (var i = 0; i < faces.nFace; i++) {
+                            if (i == 0) {
+                                selectElement = document.createElement('select');
+                                selectElement.setAttribute('onchange', 'selectOnChange(this);');
+                                var selectElementStr = '';
+                            }
+
+                            var l = (faces.info[i].left * display_width / width) | 0;
+                            var r = (faces.info[i].right * display_width / width) | 0;
+                            var t = (faces.info[i].top * display_height / height) | 0;
+                            var b = (faces.info[i].bottom * display_height / height) | 0;
+
+                            var face_rectangle = document.createElement('div');
+                            if (i == 0) {
+                                face_rectangle.setAttribute('class', 'rectangle selected');
+                                face_rectangle.setAttribute('style', 'top: ' + (t) + 'px; left:' + (l) + 'px;width:' + (r - l) + 'px;height:' + (b - t) + 'px;');
+                            } else {
+                                face_rectangle.setAttribute('class', 'rectangle noselect');
+                                face_rectangle.setAttribute('style', 'top: ' + (t) + 'px; left:' + (l) + 'px;width:' + (r - l) + 'px;height:' + (b - t) + 'px;');
+                            }
+                            image_container.appendChild(face_rectangle);
+
+                            selectElementStr += '<option value="' + i + '">' + i + '</option>';
+                            if (i == (faces.nFace - 1)) {
+                                selectElement.innerHTML += selectElementStr;
+                                image_container.appendChild(selectElement);
+                            }
+                        }
+                        doFR();
+
+                    },
+                    dataType: 'json'
+                });
+            };
+
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function selectOnChange(selectElement) {
+
+        var selectIndex = selectElement.value;
+        var face_rectangles = selectElement.parentElement.querySelectorAll('.rectangle');
+        for (var i = 0; i < face_rectangles.length; i++) {
+            if (i == selectIndex) {
+                face_rectangles[i].className = 'rectangle selected';
+            } else {
+                face_rectangles[i].className = 'rectangle noselect';
+            }
+        }
+        doFR();
+
+    }
+    </script>
+</body>
+
+</html>
