@@ -185,7 +185,7 @@ if __name__ == '__main__':
                         img_bytearray = imgByteIO.getvalue()
                         feature = create_string_buffer(facemodel.lFeatureSize)
                         libc.memcpy(feature,facemodel.pbFeature,facemodel.lFeatureSize)
-                        db_cursor.execute(u'INSERT INTO faceinfo VALUES (?,?,?,?)', (faceid,facename,sqlite3.Binary(bytes(feature)),sqlite3.Binary(img_bytearray)))
+                        db_cursor.execute(u'INSERT INTO faceinfo VALUES (?,?,?,?)', (faceid,facename,sqlite3.Binary(feature.raw),sqlite3.Binary(img_bytearray)))
                         faceid = faceid + 1
                     break
 
